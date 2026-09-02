@@ -1,0 +1,26 @@
+# Python & Virtual Environments
+.venv/
+env/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS & Temp files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+
+# Editor files
+.vscode/
+.idea/
+
+# Large training datasets and raw models (TFJS model is committed)
+*.csv
+*.zip
+*.tar.gz
+*.h5
+*.keras
+*.log

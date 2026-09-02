@@ -1,0 +1,2 @@
+# Minimal dependencies for running local server or utilities
+# Note: The web app runs entirely client-side in the browser!
