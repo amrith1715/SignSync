@@ -1,155 +1,73 @@
-# 🤟 SignSync: Real-Time Sign Language to Speech Translator
+# SignSync
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
-[![MediaPipe](https://img.shields.io/badge/MediaPipe-Hands_3D-teal.svg)](https://developers.google.com/mediapipe)
-[![TensorFlow.js](https://img.shields.io/badge/TensorFlow.js-GraphModel-orange.svg)](https://www.tensorflow.org/js)
-[![Web Speech API](https://img.shields.io/badge/Web_Speech-TTS-blue.svg)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API)
+SignSync is a local ASL fingerspelling app. Its primary recognition mode uses the trained models and preprocessing from the adjacent `sign-language-cv` repository. Webcam frames are sent to a Python service on `127.0.0.1`; no camera data is sent to a remote inference service.
 
-> **A real-time, browser-based computer vision system that translates American Sign Language (ASL) fingerspelling gestures into text and natural spoken voice — requiring only a standard laptop webcam and zero specialized hardware.**
+## Recognition flow
 
----
-
-## 🎯 Overview & Problem Statement
-
-Millions of deaf and hard-of-hearing individuals communicate primarily through sign language, yet the vast majority of hearing people never learn it. Existing digital interpreter solutions are often expensive, require specialized sensory gloves, or rely on paid cloud APIs with high latency.
-
-**SignSync** solves this communication gap by running **100% client-side inside the browser**:
-- **Zero Cloud Latency**: All image processing and ML inference runs locally on your CPU/GPU.
-- **Universal Accessibility**: Works on any device with a modern browser and a webcam.
-- **Privacy-Preserving**: Video streams never leave the user's device.
-
----
-
-## ⚙️ System Architecture
-
-```
-  [ Webcam Feed ] 
-         │
-         ▼
-  [ MediaPipe Hands ] ───▶ 21 Invariant 3D Keypoints (x, y, z)
-         │
-         ├───▶ [ Engine 1: 3D Landmark Classifier ] ──▶ Real-Time Gesture Mapping (< 0.2ms)
-         │                                                        │
-         └───▶ [ Engine 2: 28×28 Pixel CNN ] ──────────▶ Deep Learning Benchmark
-                                                                  │
-                                                                  ▼
-                                                      [ Temporal Vote Filter ]
-                                                                  │
-                                                                  ├──▶ [ Real-Time Text Transcription ]
-                                                                  │
-                                                                  └──▶ [ Text-to-Speech Voice Output 🔊 ]
+```text
+Webcam → local SignSync service → original MediaPipe HandLandmarker
+       → wrist/palm normalization → movement router
+          ├─ static MLP: 24 letters (A–I, K–Y)
+          └─ 30-frame LSTM: J, Z, or STATIC transition
+       → recognized letter → SignSync text and browser speech
 ```
 
-### 🧠 Dual-Engine Architecture
-SignSync features an interactive **Engine Switcher** (`🎯 Landmark 3D` vs. `🧠 CNN Pixel`):
-1. **MediaPipe 3D Landmark Engine (Recommended)**:
-   - Evaluates 21 normalized 3D keypoint vectors, inter-finger angles, and pinch distances.
-   - **100% invariant** to room background clutter, lighting conditions, shadows, and skin tones.
-   - Executes in **$< 0.2\text{ ms}$** directly on CPU (5,000+ FPS potential).
-2. **28×28 Deep CNN Engine**:
-   - Deep Convolutional Neural Network (Conv2D $\to$ BatchNorm $\to$ MaxPool $\to$ GlobalAvgPool $\to$ Dense) trained on the 24-class Sign MNIST benchmark.
-   - Converted to TensorFlow.js GraphModel format for browser inference.
+The adapter imports `HandTracker`, normalization, model classes, scaler, and checkpoints directly from `sign-language-cv`. It does not copy, convert, or retrain the models. SignSync also retains its earlier browser-based landmark and TensorFlow.js engines as optional modes.
 
----
+## Windows setup
 
-## ✨ Features
+Keep the repositories beside each other using these folder names:
 
-- ⚡ **Instant Auto-Start**: Automatically boots up the camera and classifier upon page load.
-- 🔊 **Voice Feedback**: Real-time Text-to-Speech (TTS) automatically speaks formed letters.
-- 👁️ **Live Diagnostic HUD**: Toggle **Debug View** to inspect real-time finger extension states (`T:🟢 I:🟢 M:⚪ R:⚪ P:⚪`), hand tilt, and top-3 candidate probabilities.
-- 🔄 **Left & Right Hand Support**: Click **Flip Hand** to mirror keypoints for left-handed signing or mirrored webcams.
-- 🖼️ **Image Upload Mode**: Upload static sign language images to test individual classifications.
-- 🎨 **Modern Glassmorphism UI**: Dark-mode, fluid responsive design built with vanilla CSS.
-
----
-
-## 📁 Repository Structure
-
-```
-signsync_github/
-├── index.html              # Main web application (GitHub Pages entry point)
-├── signsync_app.html       # Application source
-├── label_mapping.json      # 24-class ASL alphabet mapping (A-Y, skipping J & Z)
-├── model.json              # TensorFlow.js GraphModel architecture definition
-├── group1-shard1of1.bin    # TensorFlow.js GraphModel weights (2.36 MB)
-├── tfjs_model/             # Standalone model directory
-│   ├── model.json
-│   └── group1-shard1of1.bin
-├── serve_with_cors.py      # Lightweight local HTTP server script with CORS
-├── requirements.txt        # Optional Python dependencies
-├── .gitignore              # Ignores virtual environments & temp files
-└── README.md               # Project documentation
+```text
+Downloads\
+  signsync\
+  sign-language-cv\
 ```
 
----
+Create an isolated environment in SignSync and install the small runtime dependency set:
 
-## 🚀 Quick Start Guide
+```powershell
+cd $HOME\Downloads\signsync
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
 
-### Option 1: Run Locally (Fastest)
+Start the local site and model service:
 
-1. Clone or download this repository:
-   ```bash
-   git clone https://github.com/your-username/SignSync.git
-   cd SignSync
-   ```
+```powershell
+.\.venv\Scripts\python.exe serve_with_cors.py
+```
 
-2. Start a local HTTP server:
-   ```bash
-   # Using Python built-in server:
-   python -m http.server 8000
+Open <http://127.0.0.1:8001> in a modern browser and allow camera access. The first model request loads the checkpoints and MediaPipe task asset; keep the terminal running while you use the app. Press Ctrl+C to stop it.
 
-   # Or using the included CORS server:
-   python serve_with_cors.py
-   ```
+If the recognition repository is in another location, set its path before starting the server:
 
-3. Open your browser and navigate to:
-   ```
-   http://localhost:8000
-   ```
+```powershell
+$env:SIGN_LANGUAGE_CV_PATH = 'D:\path\to\sign-language-cv'
+.\.venv\Scripts\python.exe serve_with_cors.py
+```
 
-4. Allow webcam access, hold your hand in front of the camera, and start signing!
+If the cloned repository already has a working environment, it can run the same service without installing a second one:
 
----
+```powershell
+cd $HOME\Downloads\signsync
+..\sign-language-cv\.venv\Scripts\python.exe serve_with_cors.py
+```
 
-### Option 2: Deploy Free on GitHub Pages (1-Click Hosting)
+The included `requirements.txt` lists only packages needed by the adapter and cloned inference source. Python 3.12 is the recommended fresh environment. The service reports a clear error if the repository, either checkpoint, or `models\hand_landmarker.task` is missing.
 
-Because SignSync is 100% client-side with an `index.html` file, you can host it live on the web for free:
+## Current scope and limits
 
-1. Push this repository to GitHub.
-2. In your GitHub repository, navigate to **Settings** $\to$ **Pages**.
-3. Under **Branch**, select `main` (or `master`) and folder `/ (root)`.
-4. Click **Save**.
-5. Your live app will be accessible worldwide at:
-   `https://<your-username>.github.io/<repo-name>/`
+- Static model outputs are A–I and K–Y; J and Z require motion and use the temporal model. The MLP has no J class, and the LSTM's `STATIC` transition output is intentionally ignored.
+- A recognized letter is appended once while its prediction remains active. The user can clear the text, and the browser's Web Speech API can speak it.
+- Static letters must remain stable for 1.5 seconds before they are appended. J/Z events are appended when the LSTM recognizes them. This prevents frame-by-frame duplicates and reduces MLP pose detections during a motion sign.
+- The app constructs a letter string. It does not infer words or translate continuous ASL grammar. ASL fingerspelling is not general sign-language translation.
+- The original repository reports 99.5% static and 100% J/Z test accuracy, but its saved test split is not available here to reproduce those figures. Its dataset notes that the J/Z model was trained on one person. Treat those numbers as the repository's report, not a guarantee for new signers.
+- The cloned repository README claims MIT licensing, but the checkout contains no `LICENSE` file. Confirm the upstream license before redistributing its source or model artifacts.
+- Webcam permissions and the actual integrated camera path depend on a working camera and browser. A blank-frame API smoke check does not validate recognition on live gestures.
+- The full model mode needs the local Python service; static hosting alone cannot serve this inference API. The older browser engines remain optional.
 
----
+## Extending toward words and speech
 
-## 🖐️ ASL Fingerspelling Reference
-
-| Sign | Gesture Description | Key Landmark Features |
-| :---: | :--- | :--- |
-| **A** | Fist with thumb resting beside index | 4 fingers curled, thumb pointing straight up |
-| **B** | Flat hand facing forward | 4 fingers extended straight up, thumb tucked across palm |
-| **C** | Open curved hand forming a 'C' | All fingers and thumb curved with opening |
-| **D** | Index finger pointing up | Index extended, middle/ring/pinky touching thumb |
-| **F** | "OK" sign | Thumb and index touching in circle, other 3 fingers straight up |
-| **I** | Pinky straight up | Only pinky extended, other 4 fingers curled |
-| **L** | "L" shape at 90 degrees | Thumb and index extended perpendicular, others curled |
-| **V** | Peace sign | Index and middle extended and spread apart |
-| **W** | 3 fingers straight up | Index, middle, and ring extended and spread |
-| **Y** | "Hang Loose" / "Shaka" | Thumb and pinky extended, middle 3 curled |
-
----
-
-## 🛠️ Technology Stack
-
-- **MediaPipe Hands**: Real-time 3D hand tracking & 21-landmark extraction
-- **TensorFlow.js**: Client-side neural network execution
-- **Web Speech API**: In-browser Text-to-Speech audio synthesis
-- **HTML5 Canvas & Vanilla JS**: Zero frontend framework bloat, fast 60 FPS rendering
-
----
-
-## 📜 License
-
-This project is licensed under the MIT License - feel free to use and extend it for academic and research purposes.
+The HTTP adapter separates camera capture from recognition and returns the letter, confidence, routing mode, and landmarks for each frame. A later word layer can consume stable letter events, add explicit word boundaries and editing, and keep its transcription separate from any sequence-to-word model. Word-level recognition needs suitable continuous-sign data and a separately trained temporal model; the current alphabet checkpoints cannot provide it. Text-to-speech can then read the confirmed recognized text rather than individual letters.
