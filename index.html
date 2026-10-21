@@ -4,14 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SignSync — ASL Fingerspelling</title>
-<!-- TensorFlow.js -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-<!-- MediaPipe -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg-dark: #000000;
@@ -469,6 +461,134 @@ body {
 .hidden-canvas { display: none; }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+.gallery-section { grid-column:1 / -1; padding:24px; }
+.gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+.gallery-item { background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:14px; padding:14px; }
+.gallery-item img,.gallery-item video { width:100%; height:180px; object-fit:contain; background:#050506; border-radius:10px; }
+.gallery-item .media-empty { height:180px; border-radius:10px; background:#050506; display:grid; place-items:center; text-align:center; padding:20px; color:var(--text-secondary); font-size:12px; }
+.gallery-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.gallery-results { margin-top:14px; color:var(--text-secondary); font-size:13px; }
+.gallery-loading { color:var(--text-secondary); padding:18px; }
+.upload-preview img,.upload-preview video { display:block; max-width:100%; max-height:240px; margin-top:10px; border-radius:10px; }
+.upload-result[aria-busy="true"]::before { content:""; display:inline-block; width:12px; height:12px; margin-right:9px; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; vertical-align:-2px; animation:upload-spin .7s linear infinite; }
+@keyframes upload-spin { to { transform:rotate(360deg); } }
+</style>
+<style id="signsync-design-system">
+:root {
+  color-scheme: light;
+  --bg-dark: #f4f6f8; --bg-surface: #ffffff; --bg-surface-elevated: #f7f9fb;
+  --border-subtle: #dfe5eb; --border-hover: #cbd5df; --border-focus: #567a98;
+  --accent-primary: #233c50; --accent-secondary: #416d8e; --accent-tint: #edf3f7;
+  --accent-glow: transparent; --success: #287653; --success-tint: #edf6f0;
+  --warning: #8a671d; --danger: #a23a3a;
+  --text-main: #1f2b35; --text-secondary: #596875; --text-tertiary: #778590;
+  --primary: #416d8e; --text: #1f2b35; --text-muted: #596875; --danger: #a23a3a;
+  --font-sans: "Segoe UI", Inter, system-ui, sans-serif;
+  --font-mono: Consolas, "SFMono-Regular", monospace;
+}
+html { scroll-behavior:smooth; }
+body { background:var(--bg-dark); color:var(--text-main); letter-spacing:0; line-height:1.5; }
+.bg-mesh,.grid-overlay,.ambient-glow { display:none !important; }
+.app-container { width:100%; max-width:1240px; min-width:0; min-height:0; padding:24px clamp(16px,3vw,36px) 28px; grid-template-columns:minmax(0,1.55fr) minmax(280px,.72fr); gap:18px; align-content:start; overflow-x:clip; }
+.app-container > * { min-width:0; }
+.glass-card,.asl-content { background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:14px; box-shadow:0 2px 8px rgba(20,38,54,.035); backdrop-filter:none; -webkit-backdrop-filter:none; }
+.glass-card:hover { border-color:var(--border-subtle); }
+.header { padding:14px 18px; border-radius:14px; box-shadow:none; }
+.header-left { gap:11px; }
+.logo-icon { width:36px; height:36px; border-radius:10px; background:var(--accent-tint); border:0; color:var(--accent-primary); }
+.logo-sub { color:var(--text-secondary); }
+.header-badges { gap:8px; }
+.device-badge,.status-pill { background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); color:var(--text-secondary); }
+.device-badge .dot-green,.status-dot { background:var(--success); box-shadow:none; }
+.status-pill { color:var(--text-main); }
+.page-heading,.mode-tabs { grid-column:1 / -1; }
+.page-heading { padding:12px 2px 0; }
+.page-heading h1 { font-size:clamp(25px,3vw,34px); line-height:1.15; letter-spacing:-.035em; font-weight:650; }
+.page-heading p { margin-top:7px; color:var(--text-secondary); font-size:14px; max-width:64ch; }
+.mode-tabs { display:flex; gap:6px; padding:5px; border:1px solid var(--border-subtle); border-radius:12px; background:#e9edf1; width:min(100%,420px); max-width:100%; min-width:0; }
+.mode-tab { flex:1; min-width:0; border:0; border-radius:8px; padding:9px 8px; background:transparent; color:var(--text-secondary); font:600 13px var(--font-sans); cursor:pointer; white-space:normal; }
+.mode-tab[aria-selected="true"] { background:#fff; color:var(--text-main); box-shadow:0 1px 3px rgba(20,38,54,.12); }
+.camera-section { gap:12px; min-width:0; width:100%; }
+.camera-card { width:100%; min-width:0; max-width:100%; min-height:400px; aspect-ratio:16/10; background:#20272c; border:1px solid #26333c; border-radius:14px; }
+.camera-feed { object-fit:contain; }
+.camera-frame { inset:14px; border-color:rgba(255,255,255,.17); border-radius:10px; }
+.camera-label,.landmark-count { background:rgba(23,34,42,.82); border-color:rgba(255,255,255,.2); color:#e5edf2; backdrop-filter:blur(8px); }
+.controls-bar { background:#fff; border-radius:12px; padding:12px; gap:10px; }
+.btn { min-height:38px; border-radius:8px; font-size:13px; transition:background-color .15s ease,border-color .15s ease,color .15s ease; }
+.btn:hover { transform:none; }
+.btn-primary { background:var(--accent-primary); border-color:var(--accent-primary); color:#fff; }
+.btn-primary:hover { background:#304f67; color:#fff; }
+.btn-secondary { background:#fff; border-color:var(--border-subtle); color:var(--text-main); }
+.btn-secondary:hover { background:var(--bg-surface-elevated); border-color:var(--border-hover); }
+.btn-accent { background:var(--accent-tint); border-color:#cad8e3; color:#294c66; }
+.btn-accent:hover { background:#e1ebf2; }
+.btn-danger { background:#fbefef; border-color:#edd1d1; color:#8d3030; }
+.sidebar { gap:12px; min-width:0; }
+.gesture-card { padding:18px; border-radius:14px; }
+.gesture-display { width:76px; height:76px; margin:5px auto 10px; border-radius:14px; background:var(--accent-tint); border:0; box-shadow:none; color:var(--accent-primary); }
+.gesture-name { font-size:16px; }
+.gesture-desc { color:var(--text-secondary); }
+.translation-card { min-height:190px; padding:16px; border-radius:14px; }
+.translation-text { background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:10px; font-size:22px; min-height:84px; }
+.confidence-bar { background:#e8edf1; }
+.confidence-fill { background:var(--accent-secondary); }
+.confidence-label { font-size:12px; }
+.stats-card,.debug-card { border-radius:12px; }
+.stats-card { max-height:240px; overflow:auto; }
+.asl-drawer { background:rgba(22,34,44,.46); backdrop-filter:blur(4px); }
+.asl-content { border-radius:16px; box-shadow:0 20px 60px rgba(21,37,50,.18); }
+.asl-tile { background:#fff; border-color:var(--border-subtle); border-radius:10px; }
+.asl-tile:hover { transform:none; border-color:var(--border-focus); }
+.asl-tile.dynamic { background:var(--accent-tint); border-color:#c9d8e4; }
+.gallery-section { grid-column:1 / -1; padding:18px; border-radius:14px; }
+.gallery-grid { grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr)); gap:10px; }
+.gallery-item { background:#fff; border-color:var(--border-subtle); border-radius:10px; }
+.gallery-item img,.gallery-item video,.gallery-item .media-empty { background:#edf1f4; border-radius:8px; }
+.gallery-actions { align-items:center; }
+.upload-preview img,.upload-preview video { background:#edf1f4; border:1px solid var(--border-subtle); }
+.toast-container { right:18px; bottom:18px; }
+.toast { background:#fff; border-color:var(--border-subtle); border-radius:10px; box-shadow:0 8px 28px rgba(20,38,54,.15); color:var(--text-main); backdrop-filter:none; }
+.loading-overlay { background:rgba(245,247,249,.96); backdrop-filter:blur(5px); }
+.loading-text { color:var(--text-secondary); }
+.spinner { border-color:#dbe3e9; border-top-color:var(--accent-secondary); }
+.model-panel { padding:22px; }
+.test-mode-card { max-width:900px; }
+.test-grid { grid-template-columns:minmax(0,1fr); }
+.gallery-section { width:min(100% - 32px,1240px); margin:0 auto 28px; }
+.test-card { min-width:0; }
+.test-card > label,.test-card .gallery-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.test-card p { max-width:68ch; }
+.test-card input[type=file] { display:block; width:100%; margin-top:10px; }
+.file-picker-label { display:inline-flex; align-items:center; min-height:38px; padding:0 14px; border:1px solid #cad8e3; border-radius:8px; background:var(--accent-tint); color:#294c66; font-size:13px; font-weight:600; cursor:pointer; }
+.file-picker-label:hover { background:#e1ebf2; }
+#floatingAslBtn { display:none !important; }
+.reference-catalog { margin-top:18px; border-top:1px solid var(--border-subtle); padding-top:14px; }
+.reference-catalog > summary { cursor:pointer; font-weight:600; color:var(--text-main); }
+input,select { max-width:100%; }
+input[type=file] { color:var(--text-secondary); font:13px var(--font-sans); }
+:focus-visible { outline:3px solid #7da3bf; outline-offset:2px; }
+@media(max-width:850px) {
+  .app-container { grid-template-columns:minmax(0,1fr); }
+  .header { align-items:flex-start; gap:12px; }
+  .header-badges { justify-content:flex-end; }
+  .page-heading,.mode-tabs { grid-column:1; }
+  .camera-card { min-height:300px; }
+}
+@media(max-width:560px) {
+  .app-container { width:100%; max-width:100%; min-width:0; padding:12px 12px 28px; gap:12px; }
+  .app-container > * { min-width:0; max-width:100%; }
+  .header { flex-direction:column; }
+  .header-badges { justify-content:flex-start; }
+  .page-heading p { max-width:100%; overflow-wrap:anywhere; }
+  .mode-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); width:100%; overflow:hidden; }
+  .mode-tab { min-width:0; width:100%; padding:8px 2px; font-size:12px; line-height:1.2; white-space:normal; }
+  .camera-section,.camera-card,.controls-bar { min-width:0; width:100%; max-width:100%; }
+  .camera-card { min-height:250px; aspect-ratio:4/3; }
+  .controls-bar { align-items:stretch; }
+  .controls-bar > div { width:100%; }
+  .gallery-section { padding:12px; }
+}
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 </style>
 </head>
 <body>
@@ -477,7 +597,7 @@ body {
 
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
-  <div class="loading-text" id="loadingText">Loading TensorFlow.js & MediaPipe...</div>
+  <div class="loading-text" id="loadingText">Loading SignSync recognition...</div>
 </div>
 
 <div class="app-container">
@@ -486,16 +606,16 @@ body {
       <div class="logo-icon">✋</div>
       <div>
         <div class="logo-text">SignSync</div>
-        <div class="logo-sub">On-Device ASL to Speech Assistant</div>
+        <div class="logo-sub">ASL fingerspelling recognition</div>
       </div>
     </div>
     <div class="header-badges">
       <button class="btn btn-secondary" onclick="toggleAslGuide()" style="padding:6px 14px; font-size:12px; border-radius:980px;">
         <span>🖐️</span> <strong>ASL Chart (A–Z)</strong>
       </button>
-      <div class="device-badge" title="All inference runs client-side on your laptop GPU/CPU">
+      <div class="device-badge" title="Recognition runs locally on this device">
         <span class="dot-green"></span>
-        <span>Local Processing (Private)</span>
+        <span>Local processing</span>
       </div>
       <div class="status-pill" id="statusPill">
         <div class="status-dot"></div>
@@ -503,7 +623,10 @@ body {
       </div>
     </div>
   </div>
-
+  <div class="page-heading">
+    <h1>Sign language recognition</h1>
+    <p>Spell ASL letters with your webcam. Open the ASL chart for the fingerspelling reference.</p>
+  </div>
   <!-- ASL REFERENCE GUIDE MODAL -->
   <div class="asl-drawer" id="aslDrawer" onclick="if(event.target===this) toggleAslGuide()">
     <div class="asl-content">
@@ -548,12 +671,12 @@ body {
   <!-- MODEL LOADING PANEL -->
   <div class="glass-card model-panel" id="modelPanel" style="grid-column:1 / -1; display:none;">
     <h2>🧠 Load Your Trained Model</h2>
-    <p>Use the cloned recognition project, or load the original SignSync demo model.</p>
+    <p>SignSync could not initialize its local recognition service.</p>
 
     <div style="margin:16px 0; padding:14px; border:1px solid var(--border-subtle); border-radius:12px; text-align:left;">
-      <strong>Cloned sign-language-cv recognition</strong>
-      <p id="projectModelError" style="margin:8px 0; color:var(--text-secondary); font-size:13px;">The local Python service loads the original MLP and J/Z LSTM checkpoints.</p>
-      <button class="btn btn-primary" onclick="tryLoadProjectFromServer()">Retry Project Model</button>
+      <strong>SignSync recognition service</strong>
+      <p id="projectModelError" style="margin:8px 0; color:var(--text-secondary); font-size:13px;">The local service loads the static letter and J/Z movement models.</p>
+      <button class="btn btn-primary" onclick="loadSignSyncModels()">Retry</button>
     </div>
 
     <div style="display:flex; gap:12px; margin-bottom:20px; justify-content:center;">
@@ -611,8 +734,9 @@ body {
 
     <div class="glass-card controls-bar">
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; flex:1;">
-        <button class="btn btn-secondary" onclick="toggleEngine()" id="engineBtn" title="Switch Engine" style="font-weight:600;">
-          <span id="engineIcon">🤟</span> <span id="engineText">Project MLP + LSTM</span>
+        <button class="btn btn-primary" onclick="toggleLiveRecognition()" id="liveToggleBtn" type="button">Pause recognition</button>
+      <button class="btn btn-secondary" onclick="toggleEngine()" id="engineBtn" title="Switch recognition engine" style="font-weight:600;">
+          <span id="engineIcon">🤟</span> <span id="engineText">SignSync MLP + LSTM</span>
         </button>
         <button class="btn btn-accent" onclick="toggleAslGuide()">
           <span>📖</span> ASL Chart
@@ -689,10 +813,11 @@ body {
       </div>
     </div>
 
-    <div class="glass-card stats-card">
-      <div class="card-header">
-        <div class="card-title">Model Status</div>
-      </div>
+    <details class="glass-card stats-card">
+      <summary class="card-header">
+        <span class="card-title">Recognition details</span>
+        <span class="stat-label">Show</span>
+      </summary>
       <div class="stat-row">
         <span class="stat-label">Execution Environment</span>
         <span class="stat-value" style="color:var(--success);">On-Device (Local)</span>
@@ -732,7 +857,7 @@ body {
       <div class="stat-row"><span class="stat-label">Busy Frames Dropped</span><span class="stat-value" id="statDroppedFrames">0</span></div>
       <div class="stat-row"><span class="stat-label">Main Thread Long Tasks</span><span class="stat-value" id="statLongTasks">0</span></div>
       <div class="stat-row"><span class="stat-label">JS Heap (if supported)</span><span class="stat-value" id="statJsHeap">Unavailable</span></div>
-    </div>
+    </details>
   </div>
 </div>
 
@@ -752,7 +877,7 @@ let state = {
   model: null,
   labelMapping: null,
   modelLoaded: false,
-  engine: 'project', // cloned PyTorch MLP/LSTM pipeline, or legacy SignSync engines
+  engine: 'project', // SignSync's trained MLP/LSTM pipeline, or legacy browser engines
   currentLandmarks: null,
   lastPrediction: null,
   pendingLetter: null,
@@ -783,7 +908,8 @@ let state = {
   projectLongTaskCount: 0,
   projectStream: null,
   legacyCamera: null,
-  backendErrorShown: false
+  backendErrorShown: false,
+  recognitionReady: false
 };
 
 // ==================== UI HELPERS ====================
@@ -800,6 +926,40 @@ function showToast(message, type='info') {
 function setStatus(text, active=true) {
   document.getElementById('statusText').textContent = text;
   document.querySelector('.status-dot').style.background = active ? 'var(--primary)' : 'var(--danger)';
+}
+
+let activeMode = 'live';
+function selectMode(mode) {
+  if (mode !== 'live') return;
+  activeMode = 'live';
+  document.getElementById('mainApp').style.display = state.recognitionReady ? 'flex' : 'none';
+  document.getElementById('sidebar').style.display = state.recognitionReady ? 'flex' : 'none';
+  if (!state.cameraActive) {
+    if (state.engine === 'project' && state.recognitionReady) initProjectCamera();
+    else if (state.modelLoaded) initCamera();
+  }
+}
+
+function toggleLiveRecognition() {
+  if (!state.recognitionReady) {
+    loadSignSyncModels();
+    return;
+  }
+  if (state.cameraActive) {
+    if (state.engine === 'project') stopProjectCamera();
+    else stopLegacyCamera();
+    setStatus('Recognition paused', true);
+  } else if (activeMode === 'live') {
+    if (state.engine === 'project') initProjectCamera();
+    else if (state.modelLoaded) initCamera();
+  }
+}
+
+function stopLegacyCamera() {
+  if (state.legacyCamera) { state.legacyCamera.stop(); state.legacyCamera = null; }
+  state.cameraActive = false;
+  const toggle = document.getElementById('liveToggleBtn');
+  if (toggle) toggle.textContent = 'Start recognition';
 }
 
 function toggleAslGuide() {
@@ -852,20 +1012,20 @@ function toggleEngine() {
   const debugName = document.getElementById('debugEngineName');
 
   if (icon) icon.textContent = isProject ? '🤟' : isLandmark ? '🎯' : '🧠';
-  if (text) text.textContent = isProject ? 'Project MLP + LSTM' : isLandmark ? 'Landmark 3D' : 'CNN (Pixel)';
+  if (text) text.textContent = isProject ? 'SignSync MLP + LSTM' : isLandmark ? 'Landmark 3D' : 'CNN (Pixel)';
   if (btn) {
     btn.className = isProject || isLandmark ? 'btn btn-primary' : 'btn btn-secondary';
   }
   if (debugName) {
-    debugName.textContent = isProject ? 'Cloned PyTorch MLP + J/Z LSTM' : isLandmark ? 'MediaPipe Landmark 3D (Invariant)' : '28×28 Pixel CNN';
+    debugName.textContent = isProject ? 'SignSync MLP + J/Z LSTM' : isLandmark ? 'MediaPipe Landmark 3D (Invariant)' : '28×28 Pixel CNN';
   }
 
   state.predictionBuffer = [];
   state.lastPrediction = null;
-  showToast(`Switched engine to: ${isProject ? 'Project MLP + LSTM' : isLandmark ? 'MediaPipe Landmark 3D' : '28×28 Pixel CNN'}`, 'info');
+  showToast(`Switched engine to: ${isProject ? 'SignSync MLP + LSTM' : isLandmark ? 'MediaPipe Landmark 3D' : '28×28 Pixel CNN'}`, 'info');
 }
 
-async function tryLoadProjectFromServer() {
+async function loadSignSyncModels() {
   setStatus('Loading recognition models...');
   document.getElementById('loadingText').textContent = 'Loading the SignSync MLP, J/Z LSTM, and hand tracker...';
   document.getElementById('loadingOverlay').classList.remove('hidden');
@@ -875,9 +1035,9 @@ async function tryLoadProjectFromServer() {
     if (!response.ok || !info.ready) throw new Error(info.error || 'Recognition service is unavailable.');
 
     state.engine = 'project';
+    state.recognitionReady = true;
     document.getElementById('modelPanel').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'flex';
-    document.getElementById('sidebar').style.display = 'flex';
+    selectMode(activeMode);
     document.getElementById('loadingOverlay').classList.add('hidden');
     document.getElementById('statClasses').textContent = `${info.static_letters.length} static + ${info.dynamic_letters.join('/')}`;
     document.getElementById('statBackend').textContent = 'Local PyTorch CPU';
@@ -885,30 +1045,52 @@ async function tryLoadProjectFromServer() {
     document.getElementById('tfBackend').textContent = 'PyTorch CPU';
     document.getElementById('classCount').textContent = `${info.static_letters.length + info.dynamic_letters.length} letters`;
     document.getElementById('engineIcon').textContent = '🤟';
-    document.getElementById('engineText').textContent = 'Project MLP + LSTM';
+    document.getElementById('engineText').textContent = 'SignSync MLP + LSTM';
     document.getElementById('engineBtn').className = 'btn btn-primary';
-    document.getElementById('debugEngineName').textContent = 'Cloned PyTorch MLP + J/Z LSTM';
+    document.getElementById('debugEngineName').textContent = 'SignSync MLP + J/Z LSTM';
     setStatus('Models Ready — Show Hand');
     showToast('Recognition models loaded. Camera stays on this device.', 'success');
-    initProjectCamera();
   } catch (err) {
     document.getElementById('loadingOverlay').classList.add('hidden');
     document.getElementById('modelPanel').style.display = 'block';
     setStatus('Recognition service unavailable', false);
     const detail = document.getElementById('projectModelError');
     if (detail) detail.textContent = err.message || String(err);
-    showToast('Could not load the cloned recognition models. Check the local Python service.', 'error');
+    const reason = err && err.message ? err.message : String(err);
+    showToast(`Recognition service unavailable: ${reason}`, 'error');
     console.error('Project recognition service error:', err);
   }
 }
 
 // ==================== MODEL LOADING ====================
+let legacyBrowserLibraries = null;
+async function loadLegacyBrowserLibraries() {
+  const urls = [
+    'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest',
+    'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js',
+    'https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js',
+    'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js',
+    'https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js'
+  ];
+  if (!legacyBrowserLibraries) {
+    legacyBrowserLibraries = urls.reduce((queue, src) => queue.then(() => new Promise((resolve, reject) => {
+      if ([...document.scripts].some(script => script.src === src)) { resolve(); return; }
+      const script = document.createElement('script'); script.src = src; script.crossOrigin = 'anonymous';
+      script.onload = resolve; script.onerror = () => reject(new Error(`Could not load optional browser library: ${src}`));
+      document.head.append(script);
+    })), Promise.resolve());
+  }
+  await legacyBrowserLibraries;
+  configureLegacyHands();
+}
+
 async function tryLoadFromServer() {
   setStatus('Loading model from server...');
   document.getElementById('loadingText').textContent = 'Loading model from server...';
   document.getElementById('loadingOverlay').classList.remove('hidden');
 
   try {
+    await loadLegacyBrowserLibraries();
     const model = await tf.loadGraphModel('./tfjs_model/model.json');
     const response = await fetch('./label_mapping.json');
     if (!response.ok) throw new Error('label_mapping.json not found');
@@ -974,6 +1156,7 @@ async function loadUploadedModel() {
   document.getElementById('loadModelBtn').disabled = true;
 
   try {
+    await loadLegacyBrowserLibraries();
     await tf.ready();
 
     const model = await tf.loadGraphModel(
@@ -1865,10 +2048,10 @@ function onResults(results) {
   canvasCtx.restore();
 }
 
-const hands = typeof Hands !== 'undefined' ? new Hands({
-  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-}) : null;
-if (hands) {
+let hands = null;
+function configureLegacyHands() {
+  if (hands || typeof Hands === 'undefined') return;
+  hands = new Hands({ locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
   hands.setOptions({
     maxNumHands: 1,
     modelComplexity: 1,
@@ -1900,6 +2083,8 @@ async function initCamera() {
     await camera.start();
     state.legacyCamera = camera;
     state.cameraActive = true;
+    const toggle = document.getElementById('liveToggleBtn');
+    if (toggle) toggle.textContent = 'Pause recognition';
     setStatus('Camera Active');
     showToast('Camera ready! Show your hand to translate.', 'success');
   } catch (err) {
@@ -1912,6 +2097,8 @@ async function initCamera() {
 function stopProjectCamera() {
   state.projectGeneration++;
   state.cameraActive = false;
+  const toggle = document.getElementById('liveToggleBtn');
+  if (toggle) toggle.textContent = 'Start recognition';
   if (state.projectRequestController) {
     state.projectRequestController.abort();
     state.projectRequestController = null;
@@ -2088,10 +2275,12 @@ async function initProjectCamera() {
       return;
     }
     state.cameraActive = true;
+    const toggle = document.getElementById('liveToggleBtn');
+    if (toggle) toggle.textContent = 'Pause recognition';
     state.backendErrorShown = false;
     canvasElement.width = videoElement.videoWidth || 640;
     canvasElement.height = videoElement.videoHeight || 480;
-    setStatus('Camera Active — Project MLP + LSTM');
+    setStatus('Camera active · SignSync models');
     const captureCanvas = document.createElement('canvas');
     captureCanvas.width = canvasElement.width;
     captureCanvas.height = canvasElement.height;
@@ -2199,7 +2388,7 @@ async function initProjectCamera() {
           state.projectInferenceCount = 0;
           state.projectInferenceStartedAt = performance.now();
         }
-        if (state.backendErrorShown) setStatus('Camera Active - Project MLP + LSTM');
+        if (state.backendErrorShown) setStatus('Camera active · SignSync models');
         state.backendErrorShown = false;
       } catch (err) {
         if (err.name !== 'AbortError' && cameraGeneration === state.projectGeneration
@@ -2267,8 +2456,8 @@ if (modelDropZone) {
 
 // ==================== INIT ====================
 window.addEventListener('load', () => {
-  // Prefer the cloned MLP/LSTM pipeline; the original SignSync demo remains optional.
-  tryLoadProjectFromServer();
+  // Prefer SignSync's trained MLP/LSTM pipeline; browser-based engines remain available.
+  loadSignSyncModels();
 });
 
 // Load TTS voices

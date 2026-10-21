@@ -3,9 +3,47 @@ import os
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 import pathlib
+import urllib.request
+from urllib.parse import urlparse, parse_qs
 
 ROOT = str(pathlib.Path(__file__).parent.resolve())
 PORT = int(os.environ.get('SIGNSYNC_PORT', '8001'))
+COMMONS_ALPHABET_VIDEO = (
+    'https://upload.wikimedia.org/wikipedia/commons/6/64/'
+    'American_Sign_Language_demo_-_Travis_Dougherty.ogv'
+)
+LETTER_CLIPS = {'J': (26.19, 27.19), 'Z': (39.88, 40.97)}
+
+
+def _fetch_commons_alphabet_video(url):
+    if url != COMMONS_ALPHABET_VIDEO:
+        raise ValueError('Only the reviewed Wikimedia Commons alphabet video is accepted by this reference route.')
+    request = urllib.request.Request(url, headers={'User-Agent': 'SignSync/1.0 (local ASL reference testing)'})
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            final = urlparse(response.geturl())
+            if final.scheme != 'https' or final.hostname != 'upload.wikimedia.org':
+                raise ValueError('The media source redirected outside Wikimedia Commons.')
+            content_length = response.headers.get('Content-Length')
+            if content_length and int(content_length) > 12 * 1024 * 1024:
+                raise ValueError('The reference video exceeds the 12 MB download limit.')
+            chunks = []
+            size = 0
+            while True:
+                chunk = response.read(64 * 1024)
+                if not chunk:
+                    break
+                size += len(chunk)
+                if size > 12 * 1024 * 1024:
+                    raise ValueError('The reference video exceeds the 12 MB download limit.')
+                chunks.append(chunk)
+            if not chunks:
+                raise ValueError('The reference video download was empty.')
+            return b''.join(chunks)
+    except ValueError:
+        raise
+    except Exception as exc:
+        raise ValueError(f'Could not retrieve the Commons reference video: {exc}') from exc
 
 class CORSHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
@@ -30,7 +68,16 @@ class CORSHandler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
-        if self.path.split('?', 1)[0] == '/api/status':
+        route = urlparse(self.path).path
+        if route == '/api/gallery':
+            manifest = pathlib.Path(ROOT) / 'assets' / 'asl' / 'manifest.json'
+            try:
+                payload = json.loads(manifest.read_text(encoding='utf-8')) if manifest.exists() else {'items': []}
+                self._json(200, payload)
+            except Exception as exc:
+                self._json(500, {'error': f'Could not read ASL media manifest: {exc}'})
+            return
+        if route == '/api/status':
             try:
                 from recognition_service import status
                 self._json(200, status())
@@ -40,20 +87,57 @@ class CORSHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self):
-        if self.path.split('?', 1)[0] != '/api/recognize':
+        parsed = urlparse(self.path)
+        route = parsed.path
+        if route not in {'/api/recognize', '/api/test-image', '/api/test-video', '/api/test-commons-video'}:
             self._json(404, {'error': 'Unknown API endpoint.'})
             return
         try:
+            if route == '/api/test-commons-video':
+                size = int(self.headers.get('Content-Length', '0'))
+                if size <= 0 or size > 8192:
+                    self._json(413, {'error': 'Reference request must be between 1 byte and 8 KB.'})
+                    return
+                request_data = json.loads(self.rfile.read(size).decode('utf-8'))
+                label = str(request_data.get('label', '')).upper()
+                if label not in LETTER_CLIPS:
+                    self._json(400, {'error': 'Choose the reviewed J or Z clip.'})
+                    return
+                from recognition_service import RuntimeBusyError, get_runtime
+                video = _fetch_commons_alphabet_video(request_data.get('url', ''))
+                start, end = LETTER_CLIPS[label]
+                result = get_runtime().test_video(video, '.ogv', label, start, end)
+                self._json(200, result)
+                return
             size = int(self.headers.get('Content-Length', '0'))
-            if size <= 0 or size > 5 * 1024 * 1024:
-                self._json(413, {'error': 'Frame must be between 1 byte and 5 MB.'})
+            limit = 50 * 1024 * 1024 if route == '/api/test-video' else 10 * 1024 * 1024
+            if size <= 0 or size > limit:
+                self._json(413, {'error': f'Upload must be between 1 byte and {limit // (1024 * 1024)} MB.'})
                 return
             payload = self.rfile.read(size)
             if len(payload) != size:
                 self._json(400, {'error': 'Incomplete frame upload.'})
                 return
             from recognition_service import RuntimeBusyError, get_runtime
-            result = get_runtime().process_jpeg(payload)
+            runtime = get_runtime()
+            if route == '/api/test-image':
+                expected = parse_qs(parsed.query).get('expected', [None])[0]
+                if expected and expected.upper() not in set('ABCDEFGHI KLMNOPQRSTUVWXY'.replace(' ', '')):
+                    self._json(400, {'error': 'Static expected labels must be A–I or K–Y.'})
+                    return
+                result = runtime.test_image(payload, expected)
+            elif route == '/api/test-video':
+                expected = parse_qs(parsed.query).get('expected', [None])[0]
+                if expected and expected.upper() not in {'J', 'Z'}:
+                    self._json(400, {'error': 'Dynamic expected labels must be J or Z.'})
+                    return
+                suffix = pathlib.Path(parse_qs(parsed.query).get('name', ['clip.mp4'])[0]).suffix.lower()
+                if suffix not in {'.mp4', '.mov', '.avi', '.mkv', '.webm', '.ogv'}:
+                    self._json(415, {'error': 'Use an MP4, MOV, AVI, MKV, WebM, or OGV video.'})
+                    return
+                result = runtime.test_video(payload, suffix, expected)
+            else:
+                result = runtime.process_jpeg(payload)
             self._json(200, result)
         except RuntimeBusyError as exc:
             self._json(429, {'error': str(exc), 'frame_dropped': True})

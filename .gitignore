@@ -25,3 +25,9 @@ desktop.ini
 *.keras
 *.log
 PROJECT_MEMORY.md
+
+# Local ASL reference media is user-provided and is not committed by default.
+assets/asl/static/*
+!assets/asl/static/.gitkeep
+assets/asl/dynamic/*
+!assets/asl/dynamic/.gitkeep

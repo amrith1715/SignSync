@@ -1,10 +1,10 @@
-"""Adapter that exposes the cloned sign-language-cv predictor to SignSync."""
+"""SignSync's local static and dynamic ASL recognition runtime."""
 
 from __future__ import annotations
 
 import os
-import sys
 import threading
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -17,42 +17,34 @@ class RuntimeBusyError(RuntimeError):
     """The single-frame inference slot is occupied; callers should drop frames."""
 
 
-def _repository_root() -> Path:
-    configured = os.environ.get("SIGN_LANGUAGE_CV_PATH")
-    if configured:
-        return Path(configured).expanduser().resolve()
-    return Path(__file__).resolve().parent.parent / "sign-language-cv"
-
-
 class RecognitionRuntime:
-    """Loads the original models and keeps one temporal predictor per server."""
+    """Loads SignSync's trained models and keeps one temporal predictor per server."""
 
     def __init__(self) -> None:
-        self.repository = _repository_root()
+        self.root = Path(__file__).resolve().parent
+        self.models = self.root / "models"
         required = [
-            self.repository / "src" / "main_app.py",
-            self.repository / "saved_models" / "mlp.pt",
-            self.repository / "saved_models" / "lstm_jz.pt",
-            self.repository / "models" / "hand_landmarker.task",
+            self.root / "recognition" / "main_app.py",
+            self.models / "mlp.pt",
+            self.models / "lstm_jz.pt",
+            self.models / "hand_landmarker.task",
         ]
         missing = [str(path) for path in required if not path.is_file()]
         if missing:
             raise FileNotFoundError(
-                "Recognition files were not found: " + ", ".join(missing)
-                + ". Set SIGN_LANGUAGE_CV_PATH to the cloned repository."
+                "SignSync recognition files are missing: " + ", ".join(missing)
+                + ". Restore the files under SignSync's recognition/ and models/ folders."
             )
 
-        source = self.repository / "src"
-        sys.path.insert(0, str(source))
-        import main_app  # type: ignore[import-not-found]
-        from hand_tracker import HandTracker  # type: ignore[import-not-found]
+        from recognition import main_app
+        from recognition.hand_tracker import HandTracker
 
         self._main_app = main_app
         mlp, scaler, mlp_classes = main_app.load_mlp(
-            self.repository / "saved_models" / "mlp.pt"
+            self.models / "mlp.pt"
         )
         lstm, lstm_classes, seq_len = main_app.load_lstm(
-            self.repository / "saved_models" / "lstm_jz.pt"
+            self.models / "lstm_jz.pt"
         )
         self.predictor = main_app.HybridPredictor(
             mlp_model=mlp,
@@ -72,7 +64,7 @@ class RecognitionRuntime:
             str(letter) for letter in lstm_classes if str(letter) in {"J", "Z"}
         ]
         self.tracker = HandTracker(
-            model_path=self.repository / "models" / "hand_landmarker.task",
+            model_path=self.models / "hand_landmarker.task",
             max_num_hands=1,
             min_detection_confidence=0.75,
             min_tracking_confidence=0.75,
@@ -89,6 +81,116 @@ class RecognitionRuntime:
             return self._process_jpeg_locked(payload)
         finally:
             self._request_gate.release()
+
+    def test_image(self, payload: bytes, expected: str | None = None) -> dict[str, Any]:
+        """Run a still reference through the production tracker and static MLP."""
+        if not self._request_gate.acquire(blocking=False):
+            raise RuntimeBusyError("Recognition is busy; try again shortly.")
+        try:
+            frame = cv2.imdecode(np.frombuffer(payload, dtype=np.uint8), cv2.IMREAD_COLOR)
+            if frame is None or frame.size == 0:
+                raise ValueError("The file is not a readable image.")
+            height, width = frame.shape[:2]
+            if height <= 0 or width <= 0 or height * width > 20_000_000:
+                raise ValueError("Image dimensions must be valid and no larger than 20 megapixels.")
+            with self._lock:
+                self.predictor.reset()
+                _, hand = self.tracker.process_frame(frame, draw=False)
+                if hand is None:
+                    raise ValueError("No hand was detected in the image.")
+                normalized = self._main_app.normalize_flat(hand.flat)
+                letter, confidence = self.predictor._predict_mlp(normalized)
+                self.predictor.reset()
+            return self._test_result("static", letter, confidence, expected, 1)
+        finally:
+            with self._lock:
+                self.predictor.reset()
+            self._request_gate.release()
+
+    def test_video(
+        self, payload: bytes, suffix: str, expected: str | None = None,
+        start_seconds: float | None = None, end_seconds: float | None = None,
+    ) -> dict[str, Any]:
+        """Sample a clip in temporal order and run the original 30-frame LSTM."""
+        if not self._request_gate.acquire(blocking=False):
+            raise RuntimeBusyError("Recognition is busy; try again shortly.")
+        temp_path = None
+        capture = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as stream:
+                stream.write(payload)
+                temp_path = stream.name
+            capture = cv2.VideoCapture(temp_path)
+            if not capture.isOpened():
+                capture.release()
+                raise ValueError("The file is not a readable supported video.")
+            count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
+            if count <= 0:
+                capture.release()
+                raise ValueError("Could not determine the video's frame count.")
+            if count < self.predictor.seq_len:
+                capture.release()
+                raise ValueError(f"Video needs at least {self.predictor.seq_len} decodable frames.")
+            first_frame, last_frame = 0, count - 1
+            if start_seconds is not None or end_seconds is not None:
+                fps = float(capture.get(cv2.CAP_PROP_FPS))
+                if not np.isfinite(fps) or fps <= 0:
+                    capture.release()
+                    raise ValueError("Could not determine this video's frame rate.")
+                duration = count / fps
+                start = 0.0 if start_seconds is None else float(start_seconds)
+                end = duration if end_seconds is None else float(end_seconds)
+                if start < 0 or end <= start or end > duration + (1.0 / fps):
+                    capture.release()
+                    raise ValueError("The requested video segment is outside the media duration.")
+                first_frame = min(count - 1, max(0, int(start * fps)))
+                last_frame = min(count - 1, max(first_frame, int(end * fps) - 1))
+            indices = np.linspace(first_frame, last_frame, self.predictor.seq_len, dtype=int)
+            normalized_frames = []
+            with self._lock:
+                self.predictor.reset()
+                for index in indices:
+                    capture.set(cv2.CAP_PROP_POS_FRAMES, int(index))
+                    ok, frame = capture.read()
+                    if not ok or frame is None:
+                        raise ValueError("Could not decode enough frames from this video.")
+                    _, hand = self.tracker.process_frame(frame, draw=False)
+                    if hand is None:
+                        raise ValueError(f"No hand detected in sampled frame {len(normalized_frames) + 1}/{self.predictor.seq_len}.")
+                    normalized_frames.append(self._main_app.normalize_flat(hand.flat))
+                sequence = np.stack(normalized_frames, axis=0)
+                features = self._main_app.add_velocity_features(sequence)
+                import torch
+                with torch.no_grad():
+                    probabilities = torch.softmax(
+                        self.predictor.lstm_model(torch.tensor(features, dtype=torch.float32).unsqueeze(0)), dim=1
+                    ).squeeze()
+                confidence = float(probabilities.max().item())
+                letter = str(self.predictor.lstm_classes[probabilities.argmax().item()])
+            if letter == "STATIC" or confidence < self.predictor.min_conf:
+                letter = None
+            return self._test_result("dynamic", letter, confidence, expected, len(normalized_frames))
+        finally:
+            if capture is not None:
+                capture.release()
+            if temp_path:
+                try:
+                    os.unlink(temp_path)
+                except OSError:
+                    pass
+            with self._lock:
+                self.predictor.reset()
+            self._request_gate.release()
+
+    @staticmethod
+    def _test_result(kind: str, letter: str | None, confidence: float, expected: str | None, frames: int) -> dict[str, Any]:
+        expected = expected.upper() if expected else None
+        return {
+            "media_type": kind, "expected": expected, "predicted": letter,
+            "confidence": float(confidence),
+            "correct": (letter == expected) if expected else None,
+            "frames_processed": frames,
+        }
 
     def _process_jpeg_locked(self, payload: bytes) -> dict[str, Any]:
         total_started = time.perf_counter()
@@ -170,5 +272,5 @@ def status() -> dict[str, Any]:
         "static_letters": runtime.static_letters,
         "dynamic_letters": runtime.dynamic_letters,
         "sequence_length": runtime.predictor.seq_len,
-        "source": "sign-language-cv",
+        "source": "SignSync",
     }
