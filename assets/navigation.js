@@ -20,7 +20,7 @@
     document.getElementById('menuToggle').setAttribute('aria-expanded', 'false');
     document.getElementById('testingCameraNotice').textContent = resume
       ? 'Live recognition is paused while you use another workspace. It resumes when you return to Recognition after testing.'
-      : 'Choose a file, review its preview, then click Predict. Files are processed on this device.';
+      : 'Choose a file, review its preview, then click Predict. Files are sent to the SignSync recognition API.';
     const heading = document.querySelector(`[data-view="${current}"] h1`);
     document.title = `${heading.textContent} · SignSync`;
     if (focus) heading.focus({preventScroll:true});

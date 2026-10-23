@@ -1,0 +1,16 @@
+.git
+.env
+.env.*
+.vercel
+vercel-dist
+node_modules
+.venv
+venv
+__pycache__
+*.pyc
+*.log
+reports
+static_signs_images
+models/mlp_before_static_adaptation.pt
+models/mlp_static_candidate.pt
+tfjs_model

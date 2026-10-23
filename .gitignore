@@ -1,4 +1,12 @@
 # Python & Virtual Environments
+# Deployment configuration and generated frontend output
+.env
+.env.*
+!.env.example
+.vercel/
+vercel-dist/
+node_modules/
+
 .venv/
 env/
 venv/

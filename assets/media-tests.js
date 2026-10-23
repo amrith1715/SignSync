@@ -102,7 +102,7 @@
     try {
       let response;
       for (let attempt=0; attempt<4; attempt++) {
-        response = await fetch(`./api/test-${kind}?${new URLSearchParams({name:file.name})}`, {method:'POST',body:file,headers:{'Content-Type':file.type || 'application/octet-stream'},signal:controller.signal});
+        response = await fetch(`${String(window.SIGNSYNC_API_BASE || '').replace(/\/+$/, '')}/api/test-${kind}?${new URLSearchParams({name:file.name})}`, {method:'POST',body:file,headers:{'Content-Type':file.type || 'application/octet-stream'},signal:controller.signal});
         if (response.status !== 429 || attempt === 3) break;
         await response.text(); await new Promise(resolve => setTimeout(resolve,500));
       }

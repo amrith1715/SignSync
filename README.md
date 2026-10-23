@@ -2,6 +2,8 @@
 
 SignSync is a local ASL fingerspelling application. The Python service, trained checkpoints, MediaPipe task asset, inference code, and preprocessing are stored in this repository. It does not need the separate training checkout at runtime.
 
+For public deployment on Vercel with the Python API on an Oracle Cloud VM, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
 ## Recognition modes
 
 - **Live webcam:** streams frames from the browser to the local Python service. The service extracts MediaPipe landmarks and routes static poses to the MLP and motion to the LSTM.
@@ -45,7 +47,7 @@ cd C:\Users\adwai\Downloads\signsync
 
 Open <http://127.0.0.1:8001> and allow camera access. The site and API use the same local origin. Keep the terminal open while using SignSync; press Ctrl+C to stop it. The current local Python 3.11 environment has already loaded both checkpoints and the hand tracker successfully.
 
-The service binds to `127.0.0.1`. Set `SIGNSYNC_PORT` before starting it if port 8001 is occupied:
+The local service binds to `127.0.0.1`. Set `SIGNSYNC_PORT` before starting it if port 8001 is occupied:
 
 ```powershell
 $env:SIGNSYNC_PORT = '8002'

@@ -21,7 +21,7 @@
 <a href="#testing" data-view-link="testing"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v7l-6 9a1 1 0 0 0 1 2h14a1 1 0 0 0 1-2l-6-9V3M8 15h8"/></svg><span>Testing Lab</span></a>
 <a href="#alphabet" data-view-link="alphabet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6a3 3 0 0 1 3 3v14a4 4 0 0 0-4-2H4zM13 7a3 3 0 0 1 3-3h5v15h-5a3 3 0 0 0-3 2"/></svg><span>ASL Alphabet</span></a>
 <a href="#about" data-view-link="about"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/></svg><span>About</span></a></nav>
-  <div class="nav-footer"><span class="local-dot" aria-hidden="true"></span> Runs on your device<small>SignSync · Local application</small></div>
+  <div class="nav-footer"><span class="local-dot" aria-hidden="true"></span> SignSync service connected<small>Camera and uploads use the recognition API</small></div>
 </aside>
 <main id="mainContent" class="app-main" tabindex="-1">
   <section id="view-recognition" class="app-view" data-view="recognition" aria-labelledby="recognitionHeading">
@@ -29,7 +29,7 @@
       <div class="status-pill" id="statusPill" role="status"><span class="status-dot" aria-hidden="true"></span><span id="statusText">Loading recognition…</span></div>
     </header>
     <div class="loading-notice" id="loadingOverlay" role="status"><span class="spinner" aria-hidden="true"></span><span id="loadingText">Preparing recognition…</span></div>
-    <div class="model-panel" id="modelPanel" style="display:none;" role="alert"><h2 id="setupErrorTitle">Recognition unavailable</h2><p id="projectModelError">The local recognition service could not be reached.</p><button class="btn btn-primary" onclick="loadSignSyncModels()" type="button">Retry</button></div>
+    <div class="model-panel" id="modelPanel" style="display:none;" role="alert"><h2 id="setupErrorTitle">Recognition unavailable</h2><p id="projectModelError">The SignSync recognition service could not be reached.</p><button class="btn btn-primary" onclick="loadSignSyncModels()" type="button">Retry</button></div>
     <div class="recognition-layout">
       <div class="camera-section" id="mainApp">
         <div class="camera-card">
@@ -121,7 +121,7 @@
   </section>
   <section id="view-testing" class="app-view" data-view="testing" aria-labelledby="testingHeading" hidden>
     <header class="page-heading"><div><p class="eyebrow">TRY YOUR OWN FILES</p><h1 id="testingHeading" tabindex="-1">Testing Lab</h1><p>Upload an image or a short video to predict its letter using the same recognition models as the live camera.</p></div></header>
-    <p class="context-notice" id="testingCameraNotice">Choose a file, review its preview, then click Predict. Files are processed on this device.</p>
+    <p class="context-notice" id="testingCameraNotice">Choose a file, review its preview, then click Predict. Files are sent to the SignSync recognition API.</p>
     <div class="media-test-inputs">
       <section class="surface upload-section"><span class="section-number">01 / STATIC</span><h2>Test an image</h2><p>Use a clear photo of one static hand sign.</p><span class="tag">A–I and K–Y</span><label for="staticTestUpload">Choose an image</label><input id="staticTestUpload" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="staticTestHelp"><p class="field-help" id="staticTestHelp">JPG, PNG or WebP · Up to 10 MB</p></section>
       <section class="surface upload-section"><span class="section-number">02 / DYNAMIC</span><h2>Test a video</h2><p>Keep your hand visible for the whole movement.</p><span class="tag">J and Z</span><label for="dynamicTestUpload">Choose a video</label><input id="dynamicTestUpload" type="file" accept=".mp4,.mov,.avi,.mkv,.webm,.ogv" aria-describedby="dynamicTestHelp"><p class="field-help" id="dynamicTestHelp">MP4, MOV, AVI, MKV, WebM or OGV · Up to 50 MB<br>At least 30 frames; a short, complete gesture works best.</p></section>
@@ -166,10 +166,10 @@
     <p class="reference-credit">Static photographs from your supplied StartASL.com alphabet chart (© 2008). Original descriptions retained. Video references for J and Z have not been added yet.</p>
   </section>
   <section id="view-about" class="app-view" data-view="about" aria-labelledby="aboutHeading" hidden>
-    <header class="page-heading"><div><p class="eyebrow">ABOUT THE APPLICATION</p><h1 id="aboutHeading" tabindex="-1">About SignSync</h1><p>A local workspace for exploring ASL fingerspelling.</p></div></header>
+    <header class="page-heading"><div><p class="eyebrow">ABOUT THE APPLICATION</p><h1 id="aboutHeading" tabindex="-1">About SignSync</h1><p>An app for exploring ASL fingerspelling.</p></div></header>
     <article class="surface about-content"><h2>From hand signs to letters</h2><p>SignSync recognizes American Sign Language alphabet signs from your webcam and builds spelled text from confirmed letters. You can edit that text and read it aloud using your browser’s speech feature.</p>
       <h2>Three ways to explore</h2><ul><li><strong>Recognition:</strong> spell letters live with your webcam and see the detected hand landmarks.</li><li><strong>Testing Lab:</strong> try static sign images and videos of J or Z movements.</li><li><strong>ASL Alphabet:</strong> browse the available hand sign references and descriptions.</li></ul>
-      <h2>Processed on your device</h2><p>Camera frames and uploaded files are handled by the local recognition service. Image and video tests use the same recognition models as the camera.</p>
+      <h2>How recognition works</h2><p>Camera frames and uploaded files are sent to the SignSync recognition service for processing. Image and video tests use the same recognition models as the camera. Uploaded videos are processed temporarily and removed after the request.</p>
       <h2>What to expect</h2><p>SignSync recognizes individual alphabet letters; it does not translate full ASL conversations. Lighting, hand position, framing and movement can affect results. Check the predicted letters before using the spelled text.</p>
     </article>
   </section>
@@ -177,8 +177,10 @@
 <div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
 <canvas id="hiddenCanvas" width="28" height="28" class="hidden-canvas"></canvas>
 <script src="./assets/landmark-overlay.js"></script>
+<script src="./assets/deployment-config.js"></script>
 <script>
 // ==================== STATE ====================
+const signSyncApiUrl = (path) => `${String(window.SIGNSYNC_API_BASE || '').replace(/\/+$/, '')}/api/${path}`;
 let state = {
   model: null,
   labelMapping: null,
@@ -302,7 +304,7 @@ async function loadSignSyncModels() {
   document.getElementById('loadingText').textContent = 'Loading the SignSync MLP, J/Z LSTM, and hand tracker...';
   document.getElementById('loadingOverlay').classList.remove('hidden');
   try {
-    const response = await fetch('./api/status');
+    const response = await fetch(signSyncApiUrl('status'));
     const info = await response.json();
     if (!response.ok || !info.ready) throw new Error(info.error || 'Recognition service is unavailable.');
 
@@ -312,8 +314,8 @@ async function loadSignSyncModels() {
     selectMode(activeMode);
     document.getElementById('loadingOverlay').classList.add('hidden');
     document.getElementById('statClasses').textContent = `${info.static_letters.length} static + ${info.dynamic_letters.join('/')}`;
-    document.getElementById('statBackend').textContent = 'Local PyTorch CPU';
-    document.getElementById('statPredTime').textContent = 'Local inference';
+    document.getElementById('statBackend').textContent = 'PyTorch CPU API';
+    document.getElementById('statPredTime').textContent = 'Server inference';
     document.getElementById('tfBackend').textContent = 'PyTorch CPU';
     document.getElementById('classCount').textContent = `${info.static_letters.length + info.dynamic_letters.length} letters`;
     document.getElementById('debugEngineName').textContent = 'SignSync MLP + J/Z LSTM';
@@ -1670,7 +1672,7 @@ async function initProjectCamera() {
         state.projectPendingRequests++;
         document.getElementById('statPendingRequests').textContent = `${state.projectPendingRequests}`;
         const requestStartedAt = performance.now();
-        const response = await fetch('./api/recognize', {
+        const response = await fetch(signSyncApiUrl('recognize'), {
           method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob,
           signal: requestController.signal
         });

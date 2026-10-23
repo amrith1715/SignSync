@@ -7,7 +7,14 @@ import urllib.request
 from urllib.parse import urlparse, parse_qs
 
 ROOT = str(pathlib.Path(__file__).parent.resolve())
-PORT = int(os.environ.get('SIGNSYNC_PORT', '8001'))
+PORT = int(os.environ.get('PORT', os.environ.get('SIGNSYNC_PORT', '8001')))
+HOST = os.environ.get('HOST', '127.0.0.1')
+ALLOWED_ORIGINS = {
+    origin.strip().rstrip('/')
+    for origin in os.environ.get('SIGNSYNC_ALLOWED_ORIGINS', '').split(',')
+    if origin.strip()
+}
+ALLOWED_ORIGINS.update({f'http://127.0.0.1:{PORT}', f'http://localhost:{PORT}'})
 COMMONS_ALPHABET_VIDEO = (
     'https://upload.wikimedia.org/wikipedia/commons/6/64/'
     'American_Sign_Language_demo_-_Travis_Dougherty.ogv'
@@ -47,8 +54,8 @@ def _fetch_commons_alphabet_video(url):
 
 class CORSHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
-        origin = self.headers.get('Origin')
-        if origin in {f'http://127.0.0.1:{PORT}', f'http://localhost:{PORT}'}:
+        origin = self.headers.get('Origin', '').rstrip('/')
+        if origin in ALLOWED_ORIGINS:
             self.send_header('Access-Control-Allow-Origin', origin)
             self.send_header('Vary', 'Origin')
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
@@ -84,7 +91,24 @@ class CORSHandler(SimpleHTTPRequestHandler):
             except Exception as exc:
                 self._json(503, {'ready': False, 'error': str(exc)})
             return
-        super().do_GET()
+        # This service is also reachable from the public internet. Serve only
+        # the browser app's static allowlist; never expose Python, checkpoints,
+        # datasets, reports, or repository metadata from the project root.
+        static_path = pathlib.Path(super().translate_path(self.path)).resolve()
+        public_files = {
+            pathlib.Path(ROOT) / 'index.html',
+            pathlib.Path(ROOT) / 'label_mapping.json',
+            pathlib.Path(ROOT) / 'model.json',
+            pathlib.Path(ROOT) / 'group1-shard1of1.bin',
+        }
+        public_directories = [pathlib.Path(ROOT) / 'assets', pathlib.Path(ROOT) / 'tfjs_model']
+        if route == '/' or static_path in public_files or any(
+            static_path == directory.resolve() or directory.resolve() in static_path.parents
+            for directory in public_directories
+        ):
+            super().do_GET()
+        else:
+            self._json(404, {'error': 'Not found.'})
 
     def do_POST(self):
         parsed = urlparse(self.path)
@@ -150,8 +174,8 @@ class CORSHandler(SimpleHTTPRequestHandler):
         return
 
 os.chdir(ROOT)
-server = ThreadingHTTPServer(('127.0.0.1', PORT), CORSHandler)
-print(f'Serving {ROOT} on http://127.0.0.1:{PORT}')
+server = ThreadingHTTPServer((HOST, PORT), CORSHandler)
+print(f'Serving {ROOT} on {HOST}:{PORT}')
 try:
     server.serve_forever()
 except KeyboardInterrupt:
