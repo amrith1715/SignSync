@@ -93,9 +93,46 @@ class RecognitionRuntime:
             height, width = frame.shape[:2]
             if height <= 0 or width <= 0 or height * width > 20_000_000:
                 raise ValueError("Image dimensions must be valid and no larger than 20 megapixels.")
+            # Match the camera pipeline's orientation before extracting features.
+            frame = cv2.flip(frame, 1)
+            # Landmark x/z values are normalized by image width, while y uses
+            # height. Preserve the camera's 4:3 coordinate geometry for uploads
+            # by padding (never stretching) before extracting landmarks.
+            camera_width = max(width, round(height * 4 / 3))
+            camera_height = max(height, round(width * 3 / 4))
+            top = (camera_height - height) // 2
+            left = (camera_width - width) // 2
+            frame = cv2.copyMakeBorder(
+                frame, top, camera_height - height - top,
+                left, camera_width - width - left,
+                cv2.BORDER_CONSTANT, value=(255, 255, 255),
+            )
+            height, width = frame.shape[:2]
             with self._lock:
                 self.predictor.reset()
-                _, hand = self.tracker.process_frame(frame, draw=False)
+                # An unrelated uploaded photo must not inherit webcam tracking.
+                # Keep the same MediaPipe asset and thresholds, in IMAGE mode.
+                with type(self.tracker)(
+                    model_path=self.models / "hand_landmarker.task",
+                    min_detection_confidence=0.75,
+                    min_tracking_confidence=0.75,
+                    static_image_mode=True,
+                ) as image_tracker:
+                    _, hand = image_tracker.process_frame(frame, draw=False)
+                    if hand is None:
+                        # Tight reference crops can leave too little context for
+                        # palm detection. Add a camera-shaped margin, without
+                        # stretching the hand or modifying the uploaded file.
+                        padded_height = int(max(height * 1.35, width * 1.35 * .75))
+                        padded_width = round(padded_height * 4 / 3)
+                        top = (padded_height - height) // 2
+                        left = (padded_width - width) // 2
+                        padded = cv2.copyMakeBorder(
+                            frame, top, padded_height - height - top,
+                            left, padded_width - width - left,
+                            cv2.BORDER_CONSTANT, value=(255, 255, 255),
+                        )
+                        _, hand = image_tracker.process_frame(padded, draw=False)
                 if hand is None:
                     raise ValueError("No hand was detected in the image.")
                 normalized = self._main_app.normalize_flat(hand.flat)

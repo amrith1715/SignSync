@@ -1,0 +1,122 @@
+[
+  {
+    "expected": "A",
+    "predicted": "A",
+    "confidence": 0.9999948740005493
+  },
+  {
+    "expected": "B",
+    "predicted": "B",
+    "confidence": 0.9999055862426758
+  },
+  {
+    "expected": "C",
+    "predicted": "B",
+    "confidence": 0.9222127795219421
+  },
+  {
+    "expected": "D",
+    "predicted": "X",
+    "confidence": 0.8708503842353821
+  },
+  {
+    "expected": "E",
+    "predicted": "E",
+    "confidence": 0.7071660161018372
+  },
+  {
+    "expected": "F",
+    "predicted": "F",
+    "confidence": 0.9986656904220581
+  },
+  {
+    "expected": "G",
+    "predicted": "G",
+    "confidence": 0.9998925924301147
+  },
+  {
+    "expected": "H",
+    "predicted": "H",
+    "confidence": 0.9185186624526978
+  },
+  {
+    "expected": "I",
+    "predicted": "I",
+    "confidence": 0.9560840725898743
+  },
+  {
+    "expected": "K",
+    "predicted": "K",
+    "confidence": 0.9999587535858154
+  },
+  {
+    "expected": "L",
+    "predicted": "L",
+    "confidence": 0.9999523162841797
+  },
+  {
+    "expected": "M",
+    "predicted": "M",
+    "confidence": 0.9983547329902649
+  },
+  {
+    "expected": "N",
+    "predicted": null,
+    "confidence": 0.3546268045902252
+  },
+  {
+    "expected": "O",
+    "predicted": "E",
+    "confidence": 0.9106441736221313
+  },
+  {
+    "expected": "P",
+    "predicted": null,
+    "confidence": 0
+  },
+  {
+    "expected": "Q",
+    "predicted": "Q",
+    "confidence": 0.9999998807907104
+  },
+  {
+    "expected": "R",
+    "predicted": "R",
+    "confidence": 0.9999663829803467
+  },
+  {
+    "expected": "S",
+    "predicted": "S",
+    "confidence": 0.9993799924850464
+  },
+  {
+    "expected": "T",
+    "predicted": "T",
+    "confidence": 0.9928493499755859
+  },
+  {
+    "expected": "U",
+    "predicted": "R",
+    "confidence": 0.9994490742683411
+  },
+  {
+    "expected": "V",
+    "predicted": "V",
+    "confidence": 0.9994686245918274
+  },
+  {
+    "expected": "W",
+    "predicted": "W",
+    "confidence": 0.999998927116394
+  },
+  {
+    "expected": "X",
+    "predicted": "X",
+    "confidence": 0.9979173541069031
+  },
+  {
+    "expected": "Y",
+    "predicted": "Y",
+    "confidence": 0.9998171925544739
+  }
+]

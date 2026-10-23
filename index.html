@@ -3,774 +3,51 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SignSync — ASL Fingerspelling</title>
-<style>
-:root {
-  --bg-dark: #000000;
-  --bg-surface: #0a0a0c;
-  --bg-surface-elevated: #121215;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.16);
-  --border-focus: rgba(255, 255, 255, 0.28);
-  --accent-primary: #ffffff;
-  --accent-secondary: #0071e3;
-  --accent-tint: rgba(0, 113, 227, 0.12);
-  --accent-glow: rgba(0, 113, 227, 0.25);
-  --success: #30d158;
-  --success-tint: rgba(48, 209, 88, 0.12);
-  --warning: #ffd60a;
-  --danger: #ff453a;
-  --text-main: #f5f5f7;
-  --text-secondary: #86868b;
-  --text-tertiary: #6e6e73;
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
-  --font-mono: "SF Mono", "JetBrains Mono", Menlo, monospace;
-}
-* { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing: antialiased; }
-body {
-  font-family: var(--font-sans);
-  background: var(--bg-dark);
-  color: var(--text-main);
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-  letter-spacing: -0.01em;
-}
-/* Subtle ambient background glow */
-.ambient-glow {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-}
-.ambient-glow::before {
-  content: ''; position: absolute; width: 800px; height: 500px;
-  background: radial-gradient(circle, rgba(0, 113, 227, 0.08) 0%, transparent 65%);
-  top: -150px; left: 15%;
-}
-.ambient-glow::after {
-  content: ''; position: absolute; width: 600px; height: 400px;
-  background: radial-gradient(circle, rgba(48, 209, 88, 0.04) 0%, transparent 60%);
-  bottom: 0; right: 10%;
-}
-
-.app-container {
-  position: relative; z-index: 10;
-  max-width: 1440px; margin: 0 auto;
-  padding: 28px 32px;
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 24px;
-  min-height: 100vh;
-}
-@media(max-width: 1060px) {
-  .app-container { grid-template-columns: 1fr; padding: 20px 16px; }
-}
-
-/* Studio Glass Card */
-.glass-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: 20px;
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
-}
-.glass-card:hover {
-  border-color: var(--border-hover);
-}
-
-/* Header */
-.header {
-  grid-column: 1 / -1;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 24px;
-  border-radius: 18px;
-}
-.header-left {
-  display: flex; align-items: center; gap: 14px;
-}
-.logo-icon {
-  width: 40px; height: 40px;
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-hover);
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
-}
-.logo-text {
-  font-size: 20px; font-weight: 600;
-  color: var(--text-main);
-  letter-spacing: -0.02em;
-}
-.logo-sub {
-  font-size: 12px; color: var(--text-secondary);
-  font-weight: 400; margin-top: 1px;
-}
-.header-badges {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-}
-.device-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-subtle);
-  border-radius: 980px;
-  font-size: 12px; font-weight: 500;
-  color: var(--text-secondary);
-}
-.device-badge .dot-green {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 8px rgba(48, 209, 88, 0.5);
-}
-.status-pill {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 6px 14px;
-  background: var(--accent-tint);
-  border: 1px solid rgba(0, 113, 227, 0.25);
-  border-radius: 980px;
-  font-size: 12px; font-weight: 500;
-  color: #5ac8fa;
-}
-.status-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: #5ac8fa;
-}
-
-/* Camera Section */
-.camera-section { display: flex; flex-direction: column; gap: 16px; }
-.camera-card {
-  position: relative; overflow: hidden;
-  border-radius: 20px;
-  aspect-ratio: 16/10; min-height: 420px;
-  background: #000;
-  border: 1px solid var(--border-subtle);
-}
-.camera-feed {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  z-index: 2;
-  pointer-events: none;
-}
-.camera-frame {
-  position: absolute; inset: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  pointer-events: none;
-}
-.camera-label {
-  position: absolute; top: 20px; left: 20px;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-subtle);
-  padding: 6px 12px; border-radius: 980px;
-  font-size: 11px; font-weight: 500;
-  letter-spacing: 0.04em; text-transform: uppercase;
-  color: var(--text-secondary);
-}
-.landmark-count {
-  position: absolute; bottom: 20px; right: 20px;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-subtle);
-  padding: 6px 14px; border-radius: 980px;
-  font-size: 12px; font-weight: 400; color: var(--text-secondary);
-  display: flex; align-items: center; gap: 6px;
-}
-.landmark-count .count {
-  color: var(--text-main); font-weight: 600;
-  font-family: var(--font-mono);
-}
-
-/* Controls Bar */
-.controls-bar {
-  display: flex; gap: 8px; flex-wrap: wrap;
-  padding: 14px 18px;
-  border-radius: 18px;
-  align-items: center;
-}
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 9px 16px; border-radius: 10px;
-  font-family: var(--font-sans);
-  font-size: 13px; font-weight: 500;
-  cursor: pointer; transition: all 0.18s ease;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-main);
-}
-.btn-primary {
-  background: var(--text-main);
-  color: #000;
-  font-weight: 600;
-  border: 1px solid transparent;
-}
-.btn-primary:hover {
-  background: #e5e5ea;
-  transform: translateY(-1px);
-}
-.btn-secondary {
-  background: var(--bg-surface-elevated);
-  border-color: var(--border-subtle);
-  color: var(--text-main);
-}
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--border-hover);
-}
-.btn-accent {
-  background: var(--accent-tint);
-  border-color: rgba(0, 113, 227, 0.28);
-  color: #5ac8fa;
-}
-.btn-accent:hover {
-  background: rgba(0, 113, 227, 0.2);
-}
-.btn-danger {
-  background: rgba(255, 69, 58, 0.1);
-  border-color: rgba(255, 69, 58, 0.25);
-  color: #ff453a;
-}
-.btn-danger:hover {
-  background: rgba(255, 69, 58, 0.18);
-}
-.btn-icon { width: 36px; height: 36px; padding: 0; border-radius: 10px; }
-
-/* Sidebar */
-.sidebar { display: flex; flex-direction: column; gap: 16px; }
-
-.gesture-card {
-  padding: 24px; text-align: center;
-  border-radius: 20px;
-}
-.gesture-display {
-  width: 90px; height: 90px;
-  margin: 4px auto 14px;
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-hover);
-  border-radius: 22px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 44px; font-weight: 700;
-  color: var(--text-main);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
-}
-.gesture-display.gesture-pop-active {
-  animation: gesture-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-@keyframes gesture-pop {
-  0% { transform: scale(0.85); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-.gesture-name { font-size: 18px; font-weight: 600; color: var(--text-main); margin-bottom: 2px; }
-.gesture-desc { font-size: 12px; color: var(--text-secondary); }
-
-.translation-card {
-  padding: 22px; flex: 1;
-  display: flex; flex-direction: column;
-  min-height: 260px;
-  border-radius: 20px;
-}
-.card-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 14px;
-}
-.card-title {
-  font-size: 12px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--text-secondary);
-}
-.translation-text {
-  flex: 1; font-size: 24px; font-weight: 500;
-  line-height: 1.4; word-break: break-word;
-  min-height: 80px; padding: 14px 16px;
-  background: var(--bg-dark);
-  border-radius: 14px;
-  border: 1px solid var(--border-subtle);
-  color: var(--text-main);
-}
-.translation-text .cursor {
-  display: inline-block; width: 2px; height: 24px;
-  background: var(--text-main); margin-left: 3px;
-  animation: blink 1s infinite;
-  vertical-align: middle;
-}
-@keyframes blink {
-  0%, 100% { opacity: 1; } 50% { opacity: 0; }
-}
-.confidence-bar {
-  margin-top: 14px; height: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 980px; overflow: hidden;
-}
-.confidence-fill {
-  height: 100%;
-  background: var(--accent-secondary);
-  border-radius: 980px;
-  transition: width 0.25s ease;
-}
-.confidence-label {
-  display: flex; justify-content: space-between;
-  margin-top: 6px;
-  font-size: 11px; color: var(--text-secondary);
-}
-.speak-btn {
-  margin-top: 14px; width: 100%;
-  padding: 12px; border-radius: 12px;
-}
-
-/* Stats Card */
-.stats-card {
-  padding: 20px 22px;
-  border-radius: 20px;
-}
-.stat-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  font-size: 12px;
-}
-.stat-row:last-child { border-bottom: none; }
-.stat-label { color: var(--text-secondary); }
-.stat-value { font-family: var(--font-mono); color: var(--text-main); font-weight: 500; }
-
-/* ASL Cheatsheet Modal Drawer */
-.asl-drawer {
-  position: fixed; inset: 0; z-index: 1000;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  display: none; align-items: center; justify-content: center;
-  padding: 20px;
-}
-.asl-drawer.active { display: flex; }
-.asl-content {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-hover);
-  border-radius: 24px;
-  max-width: 900px; width: 100%;
-  max-height: 90vh; overflow-y: auto;
-  padding: 32px; position: relative;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8);
-}
-.asl-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 24px; padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-.asl-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 12px;
-}
-.asl-tile {
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: 14px;
-  padding: 14px 10px;
-  text-align: center;
-  transition: all 0.2s ease;
-}
-.asl-tile:hover {
-  border-color: var(--border-focus);
-  transform: translateY(-2px);
-}
-.asl-tile .letter {
-  font-size: 24px; font-weight: 700; color: var(--text-main);
-  margin-bottom: 4px;
-}
-.asl-tile .desc {
-  font-size: 11px; color: var(--text-secondary); line-height: 1.3;
-}
-.asl-tile.dynamic {
-  border-color: rgba(0, 113, 227, 0.3);
-  background: rgba(0, 113, 227, 0.05);
-}
-
-/* Debug preview */
-.debug-card {
-  padding: 18px 22px;
-  border-radius: 18px;
-}
-.debug-preview {
-  width: 100px; height: 100px;
-  image-rendering: pixelated;
-  border-radius: 10px;
-  border: 1px solid var(--border-hover);
-  background: #000;
-}
-.debug-grid {
-  display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap;
-}
-.debug-item { text-align: center; }
-.debug-item label {
-  display: block; font-size: 11px; color: var(--text-secondary);
-  margin-top: 6px; text-transform: uppercase;
-}
-
-/* Toast */
-.toast-container {
-  position: fixed; bottom: 24px; right: 24px; z-index: 1000;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.toast {
-  padding: 12px 20px;
-  background: rgba(18, 18, 21, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-hover);
-  border-radius: 14px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
-  display: flex; align-items: center; gap: 10px;
-  font-size: 13px; color: var(--text-main);
-  animation: toast-in 0.25s ease;
-}
-@keyframes toast-in {
-  from { transform: translateY(12px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* Loading */
-.loading-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  z-index: 100;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 20px;
-}
-.loading-overlay.hidden { display: none; }
-.spinner {
-  width: 44px; height: 44px;
-  border: 2.5px solid rgba(255, 255, 255, 0.1);
-  border-top-color: var(--text-main);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-text { font-size: 14px; color: var(--text-secondary); font-weight: 400; }
-
-.input-video {
-  position: absolute; inset: 0; z-index: 1;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-}
-.hidden-canvas { display: none; }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
-.gallery-section { grid-column:1 / -1; padding:24px; }
-.gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
-.gallery-item { background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:14px; padding:14px; }
-.gallery-item img,.gallery-item video { width:100%; height:180px; object-fit:contain; background:#050506; border-radius:10px; }
-.gallery-item .media-empty { height:180px; border-radius:10px; background:#050506; display:grid; place-items:center; text-align:center; padding:20px; color:var(--text-secondary); font-size:12px; }
-.gallery-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
-.gallery-results { margin-top:14px; color:var(--text-secondary); font-size:13px; }
-.gallery-loading { color:var(--text-secondary); padding:18px; }
-.upload-preview img,.upload-preview video { display:block; max-width:100%; max-height:240px; margin-top:10px; border-radius:10px; }
-.upload-result[aria-busy="true"]::before { content:""; display:inline-block; width:12px; height:12px; margin-right:9px; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; vertical-align:-2px; animation:upload-spin .7s linear infinite; }
-@keyframes upload-spin { to { transform:rotate(360deg); } }
-</style>
-<style id="signsync-design-system">
-:root {
-  color-scheme: light;
-  --bg-dark: #f4f6f8; --bg-surface: #ffffff; --bg-surface-elevated: #f7f9fb;
-  --border-subtle: #dfe5eb; --border-hover: #cbd5df; --border-focus: #567a98;
-  --accent-primary: #233c50; --accent-secondary: #416d8e; --accent-tint: #edf3f7;
-  --accent-glow: transparent; --success: #287653; --success-tint: #edf6f0;
-  --warning: #8a671d; --danger: #a23a3a;
-  --text-main: #1f2b35; --text-secondary: #596875; --text-tertiary: #778590;
-  --primary: #416d8e; --text: #1f2b35; --text-muted: #596875; --danger: #a23a3a;
-  --font-sans: "Segoe UI", Inter, system-ui, sans-serif;
-  --font-mono: Consolas, "SFMono-Regular", monospace;
-}
-html { scroll-behavior:smooth; }
-body { background:var(--bg-dark); color:var(--text-main); letter-spacing:0; line-height:1.5; }
-.bg-mesh,.grid-overlay,.ambient-glow { display:none !important; }
-.app-container { width:100%; max-width:1240px; min-width:0; min-height:0; padding:24px clamp(16px,3vw,36px) 28px; grid-template-columns:minmax(0,1.55fr) minmax(280px,.72fr); gap:18px; align-content:start; overflow-x:clip; }
-.app-container > * { min-width:0; }
-.glass-card,.asl-content { background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:14px; box-shadow:0 2px 8px rgba(20,38,54,.035); backdrop-filter:none; -webkit-backdrop-filter:none; }
-.glass-card:hover { border-color:var(--border-subtle); }
-.header { padding:14px 18px; border-radius:14px; box-shadow:none; }
-.header-left { gap:11px; }
-.logo-icon { width:36px; height:36px; border-radius:10px; background:var(--accent-tint); border:0; color:var(--accent-primary); }
-.logo-sub { color:var(--text-secondary); }
-.header-badges { gap:8px; }
-.device-badge,.status-pill { background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); color:var(--text-secondary); }
-.device-badge .dot-green,.status-dot { background:var(--success); box-shadow:none; }
-.status-pill { color:var(--text-main); }
-.page-heading,.mode-tabs { grid-column:1 / -1; }
-.page-heading { padding:12px 2px 0; }
-.page-heading h1 { font-size:clamp(25px,3vw,34px); line-height:1.15; letter-spacing:-.035em; font-weight:650; }
-.page-heading p { margin-top:7px; color:var(--text-secondary); font-size:14px; max-width:64ch; }
-.mode-tabs { display:flex; gap:6px; padding:5px; border:1px solid var(--border-subtle); border-radius:12px; background:#e9edf1; width:min(100%,420px); max-width:100%; min-width:0; }
-.mode-tab { flex:1; min-width:0; border:0; border-radius:8px; padding:9px 8px; background:transparent; color:var(--text-secondary); font:600 13px var(--font-sans); cursor:pointer; white-space:normal; }
-.mode-tab[aria-selected="true"] { background:#fff; color:var(--text-main); box-shadow:0 1px 3px rgba(20,38,54,.12); }
-.camera-section { gap:12px; min-width:0; width:100%; }
-.camera-card { width:100%; min-width:0; max-width:100%; min-height:400px; aspect-ratio:16/10; background:#20272c; border:1px solid #26333c; border-radius:14px; }
-.camera-feed { object-fit:contain; }
-.camera-frame { inset:14px; border-color:rgba(255,255,255,.17); border-radius:10px; }
-.camera-label,.landmark-count { background:rgba(23,34,42,.82); border-color:rgba(255,255,255,.2); color:#e5edf2; backdrop-filter:blur(8px); }
-.controls-bar { background:#fff; border-radius:12px; padding:12px; gap:10px; }
-.btn { min-height:38px; border-radius:8px; font-size:13px; transition:background-color .15s ease,border-color .15s ease,color .15s ease; }
-.btn:hover { transform:none; }
-.btn-primary { background:var(--accent-primary); border-color:var(--accent-primary); color:#fff; }
-.btn-primary:hover { background:#304f67; color:#fff; }
-.btn-secondary { background:#fff; border-color:var(--border-subtle); color:var(--text-main); }
-.btn-secondary:hover { background:var(--bg-surface-elevated); border-color:var(--border-hover); }
-.btn-accent { background:var(--accent-tint); border-color:#cad8e3; color:#294c66; }
-.btn-accent:hover { background:#e1ebf2; }
-.btn-danger { background:#fbefef; border-color:#edd1d1; color:#8d3030; }
-.sidebar { gap:12px; min-width:0; }
-.gesture-card { padding:18px; border-radius:14px; }
-.gesture-display { width:76px; height:76px; margin:5px auto 10px; border-radius:14px; background:var(--accent-tint); border:0; box-shadow:none; color:var(--accent-primary); }
-.gesture-name { font-size:16px; }
-.gesture-desc { color:var(--text-secondary); }
-.translation-card { min-height:190px; padding:16px; border-radius:14px; }
-.translation-text { background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:10px; font-size:22px; min-height:84px; }
-.confidence-bar { background:#e8edf1; }
-.confidence-fill { background:var(--accent-secondary); }
-.confidence-label { font-size:12px; }
-.stats-card,.debug-card { border-radius:12px; }
-.stats-card { max-height:240px; overflow:auto; }
-.asl-drawer { background:rgba(22,34,44,.46); backdrop-filter:blur(4px); }
-.asl-content { border-radius:16px; box-shadow:0 20px 60px rgba(21,37,50,.18); }
-.asl-tile { background:#fff; border-color:var(--border-subtle); border-radius:10px; }
-.asl-tile:hover { transform:none; border-color:var(--border-focus); }
-.asl-tile.dynamic { background:var(--accent-tint); border-color:#c9d8e4; }
-.gallery-section { grid-column:1 / -1; padding:18px; border-radius:14px; }
-.gallery-grid { grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr)); gap:10px; }
-.gallery-item { background:#fff; border-color:var(--border-subtle); border-radius:10px; }
-.gallery-item img,.gallery-item video,.gallery-item .media-empty { background:#edf1f4; border-radius:8px; }
-.gallery-actions { align-items:center; }
-.upload-preview img,.upload-preview video { background:#edf1f4; border:1px solid var(--border-subtle); }
-.toast-container { right:18px; bottom:18px; }
-.toast { background:#fff; border-color:var(--border-subtle); border-radius:10px; box-shadow:0 8px 28px rgba(20,38,54,.15); color:var(--text-main); backdrop-filter:none; }
-.loading-overlay { background:rgba(245,247,249,.96); backdrop-filter:blur(5px); }
-.loading-text { color:var(--text-secondary); }
-.spinner { border-color:#dbe3e9; border-top-color:var(--accent-secondary); }
-.model-panel { padding:22px; }
-.test-mode-card { max-width:900px; }
-.test-grid { grid-template-columns:minmax(0,1fr); }
-.gallery-section { width:min(100% - 32px,1240px); margin:0 auto 28px; }
-.test-card { min-width:0; }
-.test-card > label,.test-card .gallery-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
-.test-card p { max-width:68ch; }
-.test-card input[type=file] { display:block; width:100%; margin-top:10px; }
-.file-picker-label { display:inline-flex; align-items:center; min-height:38px; padding:0 14px; border:1px solid #cad8e3; border-radius:8px; background:var(--accent-tint); color:#294c66; font-size:13px; font-weight:600; cursor:pointer; }
-.file-picker-label:hover { background:#e1ebf2; }
-#floatingAslBtn { display:none !important; }
-.reference-catalog { margin-top:18px; border-top:1px solid var(--border-subtle); padding-top:14px; }
-.reference-catalog > summary { cursor:pointer; font-weight:600; color:var(--text-main); }
-input,select { max-width:100%; }
-input[type=file] { color:var(--text-secondary); font:13px var(--font-sans); }
-:focus-visible { outline:3px solid #7da3bf; outline-offset:2px; }
-@media(max-width:850px) {
-  .app-container { grid-template-columns:minmax(0,1fr); }
-  .header { align-items:flex-start; gap:12px; }
-  .header-badges { justify-content:flex-end; }
-  .page-heading,.mode-tabs { grid-column:1; }
-  .camera-card { min-height:300px; }
-}
-@media(max-width:560px) {
-  .app-container { width:100%; max-width:100%; min-width:0; padding:12px 12px 28px; gap:12px; }
-  .app-container > * { min-width:0; max-width:100%; }
-  .header { flex-direction:column; }
-  .header-badges { justify-content:flex-start; }
-  .page-heading p { max-width:100%; overflow-wrap:anywhere; }
-  .mode-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); width:100%; overflow:hidden; }
-  .mode-tab { min-width:0; width:100%; padding:8px 2px; font-size:12px; line-height:1.2; white-space:normal; }
-  .camera-section,.camera-card,.controls-bar { min-width:0; width:100%; max-width:100%; }
-  .camera-card { min-height:250px; aspect-ratio:4/3; }
-  .controls-bar { align-items:stretch; }
-  .controls-bar > div { width:100%; }
-  .gallery-section { padding:12px; }
-}
-@media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; transition-duration:.01ms !important; } }
-</style>
+<title>Recognition · SignSync</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./assets/app.css">
 </head>
 <body>
-<div class="bg-mesh"></div>
-<div class="grid-overlay"></div>
-
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="loading-text" id="loadingText">Loading SignSync recognition...</div>
-</div>
-
-<div class="app-container">
-  <div class="glass-card header">
-    <div class="header-left">
-      <div class="logo-icon">✋</div>
-      <div>
-        <div class="logo-text">SignSync</div>
-        <div class="logo-sub">ASL fingerspelling recognition</div>
-      </div>
-    </div>
-    <div class="header-badges">
-      <button class="btn btn-secondary" onclick="toggleAslGuide()" style="padding:6px 14px; font-size:12px; border-radius:980px;">
-        <span>🖐️</span> <strong>ASL Chart (A–Z)</strong>
-      </button>
-      <div class="device-badge" title="Recognition runs locally on this device">
-        <span class="dot-green"></span>
-        <span>Local processing</span>
-      </div>
-      <div class="status-pill" id="statusPill">
-        <div class="status-dot"></div>
-        <span id="statusText">Loading...</span>
-      </div>
-    </div>
+<a class="skip-link" href="#mainContent">Skip to workspace</a>
+<aside class="app-nav" aria-label="Application sidebar">
+  <div class="brand-row">
+    <a class="brand" href="#recognition" aria-label="SignSync home">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 13V6a1.5 1.5 0 0 1 3 0v5-7a1.5 1.5 0 0 1 3 0v7-5a1.5 1.5 0 0 1 3 0v6-3a1.5 1.5 0 0 1 3 0v6a7 7 0 0 1-12 5l-4-5a1.5 1.5 0 0 1 2-2l2 2"/></svg></span>
+      <span>SignSync<small>ASL fingerspelling</small></span>
+    </a>
+    <button class="menu-toggle btn btn-secondary" id="menuToggle" aria-expanded="false" aria-controls="primaryNav" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>Menu</span></button>
   </div>
-  <div class="page-heading">
-    <h1>Sign language recognition</h1>
-    <p>Spell ASL letters with your webcam. Open the ASL chart for the fingerspelling reference.</p>
-  </div>
-  <!-- ASL REFERENCE GUIDE MODAL -->
-  <div class="asl-drawer" id="aslDrawer" onclick="if(event.target===this) toggleAslGuide()">
-    <div class="asl-content">
-      <div class="asl-header">
-        <div>
-          <h2 style="font-size:20px; font-weight:600; color:var(--text-main); margin-bottom:4px;">ASL Fingerspelling Reference Guide</h2>
-          <p style="font-size:13px; color:var(--text-secondary);">26 American Sign Language letters supported on your machine</p>
+  <nav class="primary-nav" id="primaryNav" aria-label="Main navigation"><a href="#recognition" data-view-link="recognition"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg><span>Recognition</span></a>
+<a href="#testing" data-view-link="testing"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v7l-6 9a1 1 0 0 0 1 2h14a1 1 0 0 0 1-2l-6-9V3M8 15h8"/></svg><span>Testing Lab</span></a>
+<a href="#alphabet" data-view-link="alphabet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6a3 3 0 0 1 3 3v14a4 4 0 0 0-4-2H4zM13 7a3 3 0 0 1 3-3h5v15h-5a3 3 0 0 0-3 2"/></svg><span>ASL Alphabet</span></a>
+<a href="#about" data-view-link="about"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/></svg><span>About</span></a></nav>
+  <div class="nav-footer"><span class="local-dot" aria-hidden="true"></span> Runs on your device<small>SignSync · Local application</small></div>
+</aside>
+<main id="mainContent" class="app-main" tabindex="-1">
+  <section id="view-recognition" class="app-view" data-view="recognition" aria-labelledby="recognitionHeading">
+    <header class="page-heading"><div><p class="eyebrow">YOUR WORKSPACE</p><h1 id="recognitionHeading" tabindex="-1">Live Recognition</h1><p>Spell ASL letters with your webcam. Hold a static sign steady or complete a J or Z movement.</p></div>
+      <div class="status-pill" id="statusPill" role="status"><span class="status-dot" aria-hidden="true"></span><span id="statusText">Loading recognition…</span></div>
+    </header>
+    <div class="loading-notice" id="loadingOverlay" role="status"><span class="spinner" aria-hidden="true"></span><span id="loadingText">Preparing recognition…</span></div>
+    <div class="model-panel" id="modelPanel" style="display:none;" role="alert"><h2 id="setupErrorTitle">Recognition unavailable</h2><p id="projectModelError">The local recognition service could not be reached.</p><button class="btn btn-primary" onclick="loadSignSyncModels()" type="button">Retry</button></div>
+    <div class="recognition-layout">
+      <div class="camera-section" id="mainApp">
+        <div class="camera-card">
+          <video class="input-video" id="inputVideo" muted playsinline aria-label="Live webcam preview"></video>
+          <canvas class="camera-feed" id="outputCanvas" aria-label="Detected hand landmarks"></canvas>
+          <img id="uploadedImagePreview" alt="Uploaded sign preview" style="display:none;" />
+          <div id="uploadedImageLabel" style="display:none;"></div>
+          <div class="camera-empty" id="cameraEmpty"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg><strong>Your camera workspace</strong><span>Start recognition and keep your hand in view.</span></div>
+          <div class="camera-label">Live camera</div>
+          <div class="landmark-count"><span>Hand: <strong id="handStatus">Camera stopped</strong></span><span id="liveFps">— FPS</span></div>
         </div>
-        <button class="btn btn-secondary btn-icon" onclick="toggleAslGuide()" style="border-radius:50%; font-size:16px;">✕</button>
-      </div>
-      <div class="asl-grid" id="aslGrid">
-        <div class="asl-tile"><div class="letter">A</div><div class="desc">Fist, thumb upright beside index</div></div>
-        <div class="asl-tile"><div class="letter">B</div><div class="desc">4 fingers straight, thumb across palm</div></div>
-        <div class="asl-tile"><div class="letter">C</div><div class="desc">Curved open hand forming 'C'</div></div>
-        <div class="asl-tile"><div class="letter">D</div><div class="desc">Index pointing up, other 3 touch thumb</div></div>
-        <div class="asl-tile"><div class="letter">E</div><div class="desc">All fingertips curled down onto thumb</div></div>
-        <div class="asl-tile"><div class="letter">F</div><div class="desc">Thumb + index pinch, 3 fingers up</div></div>
-        <div class="asl-tile"><div class="letter">G</div><div class="desc">Index pointing horizontally sideways</div></div>
-        <div class="asl-tile"><div class="letter">H</div><div class="desc">Index + middle pointing sideways</div></div>
-        <div class="asl-tile"><div class="letter">I</div><div class="desc">Pinky straight up, other 4 closed</div></div>
-        <div class="asl-tile dynamic"><div class="letter">J ⚡</div><div class="desc">Hold 'I' & swoop downward hook</div></div>
-        <div class="asl-tile"><div class="letter">K</div><div class="desc">Index up, middle forward, thumb between</div></div>
-        <div class="asl-tile"><div class="letter">L</div><div class="desc">Thumb + index at 90° angle ('L')</div></div>
-        <div class="asl-tile"><div class="letter">M</div><div class="desc">Thumb tucked under 3 fingers</div></div>
-        <div class="asl-tile"><div class="letter">N</div><div class="desc">Thumb tucked under 2 fingers</div></div>
-        <div class="asl-tile"><div class="letter">O</div><div class="desc">All fingertips touching thumb ('O')</div></div>
-        <div class="asl-tile"><div class="letter">P</div><div class="desc">'K' hand shape tilted downward</div></div>
-        <div class="asl-tile"><div class="letter">Q</div><div class="desc">'G' hand shape tilted downward</div></div>
-        <div class="asl-tile"><div class="letter">R</div><div class="desc">Index and middle fingers crossed</div></div>
-        <div class="asl-tile"><div class="letter">S</div><div class="desc">Fist with thumb across front</div></div>
-        <div class="asl-tile"><div class="letter">T</div><div class="desc">Thumb tucked between index & middle</div></div>
-        <div class="asl-tile"><div class="letter">U</div><div class="desc">Index + middle straight & together</div></div>
-        <div class="asl-tile"><div class="letter">V</div><div class="desc">Index + middle apart in 'V' shape</div></div>
-        <div class="asl-tile"><div class="letter">W</div><div class="desc">Index + middle + ring up ('W')</div></div>
-        <div class="asl-tile"><div class="letter">X</div><div class="desc">Index bent in hook/curled pose</div></div>
-        <div class="asl-tile"><div class="letter">Y</div><div class="desc">Thumb + pinky extended ('Shaka')</div></div>
-        <div class="asl-tile dynamic"><div class="letter">Z ⚡</div><div class="desc">Point index & trace 'Z' zigzag</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODEL LOADING PANEL -->
-  <div class="glass-card model-panel" id="modelPanel" style="grid-column:1 / -1; display:none;">
-    <h2>🧠 Load Your Trained Model</h2>
-    <p>SignSync could not initialize its local recognition service.</p>
-
-    <div style="margin:16px 0; padding:14px; border:1px solid var(--border-subtle); border-radius:12px; text-align:left;">
-      <strong>SignSync recognition service</strong>
-      <p id="projectModelError" style="margin:8px 0; color:var(--text-secondary); font-size:13px;">The local service loads the static letter and J/Z movement models.</p>
-      <button class="btn btn-primary" onclick="loadSignSyncModels()">Retry</button>
-    </div>
-
-    <div style="display:flex; gap:12px; margin-bottom:20px; justify-content:center;">
-      <button class="btn btn-primary" onclick="tryLoadFromServer()">
-        <span>🌐</span> Load from Server
-      </button>
-      <button class="btn btn-secondary" onclick="document.getElementById('modelFileInput').click()">
-        <span>📁</span> Upload Files
-      </button>
-    </div>
-
-    <input type="file" id="modelFileInput" multiple accept=".json,.bin" style="display:none;" onchange="handleModelUpload(event)">
-  <input type="file" id="imageUploadInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
-
-    <div class="drop-zone" id="modelDropZone" onclick="document.getElementById('modelFileInput').click()">
-      <div class="icon">📦</div>
-      <div class="title">Drop model files here</div>
-      <div class="subtitle">Select model.json + all .bin weight files + label_mapping.json</div>
-    </div>
-
-
-    <div id="uploadHint" style="margin-top:12px; color:var(--text-muted); font-size:12px;">Select all 3 files: model.json, group1-shard1of1.bin and label_mapping.json.</div>
-    <div id="uploadedFiles" style="display:none;">
-      <div class="file-list" id="fileList"></div>
-      <button class="btn btn-primary" style="margin-top:16px; width:100%;" onclick="loadUploadedModel()" id="loadModelBtn">
-        <span>🚀</span> Load Model into Browser
-      </button>
-    </div>
-
-    <div style="margin-top:24px; padding:16px; background:rgba(0,0,0,0.2); border-radius:12px; text-align:left; font-size:13px; color:var(--text-muted);">
-      <strong style="color:var(--text);">📋 Expected files from notebook:</strong><br>
-      • <code>model.json</code> — Model architecture<br>
-      • <code>group1-shard1of1.bin</code> — Model weights<br>
-      • <code>label_mapping.json</code> — Letter mappings
-    </div>
-  </div>
-
-  <!-- MAIN APP (hidden until model loaded) -->
-  <div class="camera-section" id="mainApp" style="display:none;">
-    <div class="glass-card camera-card">
-      <video class="input-video" id="inputVideo" playsinline></video>
-      <canvas class="camera-feed" id="outputCanvas"></canvas>
-      <img id="uploadedImagePreview" alt="Uploaded sign preview" style="display:none; position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:rgba(0,0,0,0.35);" />
-      <div id="uploadedImageLabel" style="display:none; position:absolute; top:20px; left:20px; z-index:5; background:rgba(0,0,0,0.6); color:var(--text-main); padding:8px 14px; border-radius:10px; font-weight:700; letter-spacing:0.08em;">Predicted: ?</div>
-      <div class="camera-frame"></div>
-      <div class="camera-label">Webcam · On-Device Feed</div>
-      <div class="landmark-count">
-        <span>Hand:</span>
-        <span class="count" id="handStatus">Not detected</span>
-        <span style="margin: 0 4px; opacity:0.3;">|</span>
-        <span>Webcam FPS:</span>
-        <span class="count" id="liveFps" style="color:var(--text-main);">--</span>
-      </div>
-    </div>
-
-    <div class="glass-card controls-bar">
-      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; flex:1;">
-        <button class="btn btn-primary" onclick="toggleLiveRecognition()" id="liveToggleBtn" type="button">Pause recognition</button>
-      <button class="btn btn-secondary" onclick="toggleEngine()" id="engineBtn" title="Switch recognition engine" style="font-weight:600;">
-          <span id="engineIcon">🤟</span> <span id="engineText">SignSync MLP + LSTM</span>
-        </button>
-        <button class="btn btn-accent" onclick="toggleAslGuide()">
-          <span>📖</span> ASL Chart
-        </button>
-        <button class="btn btn-secondary" onclick="toggleFlip()" id="flipBtn" title="Mirror hand">
-          <span>🔄</span> Mirror
-        </button>
-        <button class="btn btn-secondary" onclick="document.getElementById('imageUploadInput').click()" title="Test static image">
-          <span>🖼️</span> Test Image
-        </button>
-        <button class="btn btn-secondary" onclick="toggleDebug()" title="Toggle live classifier debug stats">
-          <span>👁️</span> Diagnostics
-        </button>
-      </div>
-
-      <div style="display:flex; gap:8px; align-items:center;">
-        <button class="btn btn-secondary" onclick="clearText()" title="Clear transcribed text">
-          <span>🗑️</span> Clear
-        </button>
-        <button class="btn btn-primary" onclick="speakText()" title="Speak translated text">
-          <span>🔊</span> Speak
-        </button>
-      </div>
-    </div>
-
-    <div class="glass-card debug-card" id="debugCard" style="display:none;">
+        <div class="camera-controls"><button class="btn btn-primary" onclick="toggleLiveRecognition()" id="liveToggleBtn" type="button">Start recognition</button><button class="btn btn-secondary" id="diagnosticsToggle" onclick="toggleDebug()" type="button" aria-expanded="false" aria-controls="debugCard">Diagnostics</button><span class="camera-note">Camera frames are processed locally.</span></div>
+        <p class="workspace-hint">Keep your whole hand visible in good light. A letter is added after it stays confirmed; lower your hand briefly to repeat it.</p>
+            <div class="glass-card debug-card" id="debugCard" style="display:none;">
       <div class="card-header">
         <div class="card-title">🔍 Real-Time Classifier Diagnostics</div>
       </div>
       <div class="debug-grid">
-        <div class="debug-item">
-          <canvas id="previewCrop" width="28" height="28" class="debug-preview" style="width:112px; height:112px;"></canvas>
-          <label>28×28 Crop (CNN)</label>
-        </div>
         <div class="debug-item">
           <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-muted); text-align:left; line-height:1.6;">
             <div>Engine: <span style="color:var(--primary); font-weight:bold;" id="debugEngineName">MediaPipe Landmark 3D</span></div>
@@ -782,38 +59,19 @@ input[type=file] { color:var(--text-secondary); font:13px var(--font-sans); }
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="sidebar" id="sidebar" style="display:none;">
-    <div class="glass-card gesture-card">
-      <div class="card-header" style="justify-content:center;">
-        <div class="card-title">Detected Letter</div>
       </div>
-      <div class="gesture-display" id="gestureDisplay">?</div>
-      <div class="gesture-name" id="gestureName">Waiting...</div>
-      <div class="gesture-desc" id="gestureDesc">Show a hand sign</div>
-    </div>
-
-    <div class="glass-card translation-card">
-      <div class="card-header">
-        <div class="card-title">Translation</div>
-        <button class="btn btn-icon btn-secondary" onclick="speakText()" title="Speak">
-          <span>🔊</span>
-        </button>
-      </div>
-      <div class="translation-text" id="translationText">
-        <span id="textContent"></span><span class="cursor"></span>
-      </div>
-      <div class="confidence-bar">
-        <div class="confidence-fill" id="confidenceFill" style="width:0%"></div>
-      </div>
-      <div class="confidence-label">
-        <span>Confidence</span>
-        <span id="confidenceValue">0%</span>
-      </div>
-    </div>
-
-    <details class="glass-card stats-card">
+      <div class="results-panel" id="sidebar">
+        <section class="surface gesture-card" aria-labelledby="detectedHeading">
+          <h2 id="detectedHeading">Detected letter</h2>
+          <div class="gesture-display" id="gestureDisplay">—</div>
+          <div class="gesture-name" id="gestureName">Waiting for a sign</div><p class="gesture-desc" id="gestureDesc">Show a hand sign</p>
+          <div id="liveConfidence" hidden><div class="confidence-label"><span>Model confidence</span><span id="confidenceValue">—</span></div><div class="confidence-bar"><div class="confidence-fill" id="confidenceFill" style="width:0%"></div></div></div>
+        </section>
+        <section class="surface translation-card" aria-labelledby="textHeading"><h2 id="textHeading">Spelled text</h2><div class="translation-text" id="translationText" aria-live="polite" aria-label="Spelled text"><span id="textContent"></span></div>
+          <div class="text-controls"><button class="btn btn-secondary" onclick="deleteLastLetter()" type="button" title="Delete the last letter">Delete last</button><button class="btn btn-secondary" onclick="clearText()" type="button">Clear</button><button class="btn btn-primary" id="speakBtn" onclick="speakText()" type="button">Speak</button></div>
+          <p class="field-help">Confirmed letters appear here. You can edit or read them aloud.</p>
+        </section>
+            <details class="glass-card stats-card">
       <summary class="card-header">
         <span class="card-title">Recognition details</span>
         <span class="stat-label">Show</span>
@@ -832,11 +90,11 @@ input[type=file] { color:var(--text-secondary); font:13px var(--font-sans); }
       </div>
       <div class="stat-row">
         <span class="stat-label">Inference Engine</span>
-        <span class="stat-value" id="statBackend">WASM / CPU</span>
+        <span class="stat-value" id="statBackend">Loading...</span>
       </div>
       <div class="stat-row">
         <span class="stat-label">Backend Latency</span>
-        <span class="stat-value" id="statPredTime">&lt; 0.2ms</span>
+        <span class="stat-value" id="statPredTime">-- ms</span>
       </div>
       <div class="stat-row"><span class="stat-label">MediaPipe</span><span class="stat-value" id="statMediaPipe">-- ms</span></div>
       <div class="stat-row"><span class="stat-label">JPEG Decode</span><span class="stat-value" id="statDecodeTime">-- ms</span></div>
@@ -858,19 +116,67 @@ input[type=file] { color:var(--text-secondary); font:13px var(--font-sans); }
       <div class="stat-row"><span class="stat-label">Main Thread Long Tasks</span><span class="stat-value" id="statLongTasks">0</span></div>
       <div class="stat-row"><span class="stat-label">JS Heap (if supported)</span><span class="stat-value" id="statJsHeap">Unavailable</span></div>
     </details>
-  </div>
-</div>
-
-<!-- Floating ASL Quick Reference Pill Button -->
-<button onclick="toggleAslGuide()" id="floatingAslBtn" style="position:fixed; bottom:20px; left:20px; z-index:900; background:rgba(18,18,21,0.85); color:var(--text-secondary); border:1px solid var(--border-subtle); padding:8px 16px; border-radius:980px; font-family:var(--font-sans); font-size:12px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 8px 24px rgba(0,0,0,0.4); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); transition:all 0.2s ease;" onmouseover="this.style.color='var(--text-main)'; this.style.borderColor='var(--border-hover)';" onmouseout="this.style.color='var(--text-secondary)'; this.style.borderColor='var(--border-subtle)';">
-  <span>🖐️</span> ASL Chart
-</button>
-
-<div class="toast-container" id="toastContainer"></div>
-
-<!-- Hidden canvases for preprocessing -->
+      </div>
+    </div>
+  </section>
+  <section id="view-testing" class="app-view" data-view="testing" aria-labelledby="testingHeading" hidden>
+    <header class="page-heading"><div><p class="eyebrow">TRY YOUR OWN FILES</p><h1 id="testingHeading" tabindex="-1">Testing Lab</h1><p>Upload an image or a short video to predict its letter using the same recognition models as the live camera.</p></div></header>
+    <p class="context-notice" id="testingCameraNotice">Choose a file, review its preview, then click Predict. Files are processed on this device.</p>
+    <div class="media-test-inputs">
+      <section class="surface upload-section"><span class="section-number">01 / STATIC</span><h2>Test an image</h2><p>Use a clear photo of one static hand sign.</p><span class="tag">A–I and K–Y</span><label for="staticTestUpload">Choose an image</label><input id="staticTestUpload" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="staticTestHelp"><p class="field-help" id="staticTestHelp">JPG, PNG or WebP · Up to 10 MB</p></section>
+      <section class="surface upload-section"><span class="section-number">02 / DYNAMIC</span><h2>Test a video</h2><p>Keep your hand visible for the whole movement.</p><span class="tag">J and Z</span><label for="dynamicTestUpload">Choose a video</label><input id="dynamicTestUpload" type="file" accept=".mp4,.mov,.avi,.mkv,.webm,.ogv" aria-describedby="dynamicTestHelp"><p class="field-help" id="dynamicTestHelp">MP4, MOV, AVI, MKV, WebM or OGV · Up to 50 MB<br>At least 30 frames; a short, complete gesture works best.</p></section>
+    </div>
+    <section class="surface media-test-result" id="mediaTestResult" aria-labelledby="testResultHeading">
+      <div class="test-result-heading"><h2 id="testResultHeading">Test result</h2><span class="processing-indicator"><span class="spinner" aria-hidden="true"></span>Processing</span></div>
+      <div id="mediaTestFilename">No file selected</div>
+      <div class="test-result-body"><div><span class="result-label">Predicted letter</span><strong id="mediaTestLetter">—</strong></div><div role="status" aria-live="polite" aria-atomic="true"><p id="mediaTestStatus">Choose an image or video to begin.</p><p id="mediaTestConfidence"></p></div></div>
+      <p class="field-help">Model confidence describes the prediction; it does not guarantee that the letter is correct.</p>
+    </section>
+  </section>
+  <section id="view-alphabet" class="app-view" data-view="alphabet" aria-labelledby="alphabetHeading" hidden>
+    <header class="page-heading"><div><p class="eyebrow">FINGERSPELLING REFERENCE</p><h1 id="alphabetHeading" tabindex="-1">ASL Alphabet</h1><p>Explore the hand shapes for A–Z. Static letters use a held pose; J and Z include movement.</p></div></header>
+    <div class="alphabet-intro"><span>24 static reference images</span><span class="tag">J &amp; Z · Dynamic</span></div>
+    <div class="asl-grid" id="aslGrid">
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/A.png" alt="ASL hand sign for A"><div class="letter">A</div><div class="desc">Fist, thumb upright beside index</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/B.png" alt="ASL hand sign for B"><div class="letter">B</div><div class="desc">4 fingers straight, thumb across palm</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/C.png" alt="ASL hand sign for C"><div class="letter">C</div><div class="desc">Curved open hand forming 'C'</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/D.png" alt="ASL hand sign for D"><div class="letter">D</div><div class="desc">Index pointing up, other 3 touch thumb</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/E.png" alt="ASL hand sign for E"><div class="letter">E</div><div class="desc">All fingertips curled down onto thumb</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/F.png" alt="ASL hand sign for F"><div class="letter">F</div><div class="desc">Thumb + index pinch, 3 fingers up</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/G.png" alt="ASL hand sign for G"><div class="letter">G</div><div class="desc">Index pointing horizontally sideways</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/H.png" alt="ASL hand sign for H"><div class="letter">H</div><div class="desc">Index + middle pointing sideways</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/I.png" alt="ASL hand sign for I"><div class="letter">I</div><div class="desc">Pinky straight up, other 4 closed</div></div>
+        <div class="asl-tile dynamic"><div class="reference-placeholder">Video reference<br>not yet available</div><div class="letter">J <span class="tag">Dynamic</span></div><div class="desc">Hold 'I' & swoop downward hook</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/K.png" alt="ASL hand sign for K"><div class="letter">K</div><div class="desc">Index up, middle forward, thumb between</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/L.png" alt="ASL hand sign for L"><div class="letter">L</div><div class="desc">Thumb + index at 90° angle ('L')</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/M.png" alt="ASL hand sign for M"><div class="letter">M</div><div class="desc">Thumb tucked under 3 fingers</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/N.png" alt="ASL hand sign for N"><div class="letter">N</div><div class="desc">Thumb tucked under 2 fingers</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/O.png" alt="ASL hand sign for O"><div class="letter">O</div><div class="desc">All fingertips touching thumb ('O')</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/P.png" alt="ASL hand sign for P"><div class="letter">P</div><div class="desc">'K' hand shape tilted downward</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/Q.png" alt="ASL hand sign for Q"><div class="letter">Q</div><div class="desc">'G' hand shape tilted downward</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/R.png" alt="ASL hand sign for R"><div class="letter">R</div><div class="desc">Index and middle fingers crossed</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/S.png" alt="ASL hand sign for S"><div class="letter">S</div><div class="desc">Fist with thumb across front</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/T.png" alt="ASL hand sign for T"><div class="letter">T</div><div class="desc">Thumb tucked between index & middle</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/U.png" alt="ASL hand sign for U"><div class="letter">U</div><div class="desc">Index + middle straight & together</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/V.png" alt="ASL hand sign for V"><div class="letter">V</div><div class="desc">Index + middle apart in 'V' shape</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/W.png" alt="ASL hand sign for W"><div class="letter">W</div><div class="desc">Index + middle + ring up ('W')</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/X.png" alt="ASL hand sign for X"><div class="letter">X</div><div class="desc">Index bent in hook/curled pose</div></div>
+        <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/Y.png" alt="ASL hand sign for Y"><div class="letter">Y</div><div class="desc">Thumb + pinky extended ('Shaka')</div></div>
+        <div class="asl-tile dynamic"><div class="reference-placeholder">Video reference<br>not yet available</div><div class="letter">Z <span class="tag">Dynamic</span></div><div class="desc">Point index & trace 'Z' zigzag</div></div></div>
+    <p class="reference-credit">Static photographs from your supplied StartASL.com alphabet chart (© 2008). Original descriptions retained. Video references for J and Z have not been added yet.</p>
+  </section>
+  <section id="view-about" class="app-view" data-view="about" aria-labelledby="aboutHeading" hidden>
+    <header class="page-heading"><div><p class="eyebrow">ABOUT THE APPLICATION</p><h1 id="aboutHeading" tabindex="-1">About SignSync</h1><p>A local workspace for exploring ASL fingerspelling.</p></div></header>
+    <article class="surface about-content"><h2>From hand signs to letters</h2><p>SignSync recognizes American Sign Language alphabet signs from your webcam and builds spelled text from confirmed letters. You can edit that text and read it aloud using your browser’s speech feature.</p>
+      <h2>Three ways to explore</h2><ul><li><strong>Recognition:</strong> spell letters live with your webcam and see the detected hand landmarks.</li><li><strong>Testing Lab:</strong> try static sign images and videos of J or Z movements.</li><li><strong>ASL Alphabet:</strong> browse the available hand sign references and descriptions.</li></ul>
+      <h2>Processed on your device</h2><p>Camera frames and uploaded files are handled by the local recognition service. Image and video tests use the same recognition models as the camera.</p>
+      <h2>What to expect</h2><p>SignSync recognizes individual alphabet letters; it does not translate full ASL conversations. Lighting, hand position, framing and movement can affect results. Check the predicted letters before using the spelled text.</p>
+    </article>
+  </section>
+</main>
+<div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
 <canvas id="hiddenCanvas" width="28" height="28" class="hidden-canvas"></canvas>
-
+<script src="./assets/landmark-overlay.js"></script>
 <script>
 // ==================== STATE ====================
 let state = {
@@ -882,6 +188,9 @@ let state = {
   lastPrediction: null,
   pendingLetter: null,
   pendingSince: 0,
+  pendingMode: null,
+  pendingCount: 0,
+  motionSettleUntil: 0,
   predictionBuffer: [],
   predictionHistory: [],
   text: '',
@@ -896,6 +205,7 @@ let state = {
   lastFpsTimestamp: performance.now(),
   currentFps: 0,
   projectLandmarks: null,
+  projectOverlayFrame: null,
   projectInferenceCount: 0,
   projectInferenceStartedAt: 0,
   projectInferenceTimer: null,
@@ -904,6 +214,7 @@ let state = {
   projectPendingRequests: 0,
   projectDroppedFrames: 0,
   projectMetricsTimer: null,
+  projectVideoCallback: null,
   projectLongTaskObserver: null,
   projectLongTaskCount: 0,
   projectStream: null,
@@ -958,6 +269,7 @@ function toggleLiveRecognition() {
 function stopLegacyCamera() {
   if (state.legacyCamera) { state.legacyCamera.stop(); state.legacyCamera = null; }
   state.cameraActive = false;
+  document.getElementById('cameraEmpty').hidden = false;
   const toggle = document.getElementById('liveToggleBtn');
   if (toggle) toggle.textContent = 'Start recognition';
 }
@@ -971,6 +283,7 @@ function toggleAslGuide() {
 
 function toggleDebug() {
   state.debugVisible = !state.debugVisible;
+  document.getElementById('diagnosticsToggle').setAttribute('aria-expanded', String(state.debugVisible));
   document.getElementById('debugCard').style.display = state.debugVisible ? 'block' : 'none';
 }
 
@@ -982,47 +295,6 @@ function toggleFlip() {
     btn.style.color = state.flipHorizontal ? 'var(--primary)' : '';
   }
   showToast(state.flipHorizontal ? 'Hand flipped (mirrored)' : 'Hand normal (unmirrored)', 'info');
-}
-
-function toggleEngine() {
-  if (state.engine === 'project') {
-    if (!state.modelLoaded) {
-      tryLoadFromServer();
-      return;
-    }
-    stopProjectCamera();
-    state.engine = 'landmark';
-    initCamera();
-  } else if (state.engine === 'landmark') {
-    state.engine = 'cnn';
-  } else {
-    if (state.legacyCamera) {
-      state.legacyCamera.stop();
-      state.legacyCamera = null;
-    }
-    state.engine = 'project';
-    initProjectCamera();
-  }
-  const isLandmark = state.engine === 'landmark';
-  const isProject = state.engine === 'project';
-
-  const icon = document.getElementById('engineIcon');
-  const text = document.getElementById('engineText');
-  const btn = document.getElementById('engineBtn');
-  const debugName = document.getElementById('debugEngineName');
-
-  if (icon) icon.textContent = isProject ? '🤟' : isLandmark ? '🎯' : '🧠';
-  if (text) text.textContent = isProject ? 'SignSync MLP + LSTM' : isLandmark ? 'Landmark 3D' : 'CNN (Pixel)';
-  if (btn) {
-    btn.className = isProject || isLandmark ? 'btn btn-primary' : 'btn btn-secondary';
-  }
-  if (debugName) {
-    debugName.textContent = isProject ? 'SignSync MLP + J/Z LSTM' : isLandmark ? 'MediaPipe Landmark 3D (Invariant)' : '28×28 Pixel CNN';
-  }
-
-  state.predictionBuffer = [];
-  state.lastPrediction = null;
-  showToast(`Switched engine to: ${isProject ? 'SignSync MLP + LSTM' : isLandmark ? 'MediaPipe Landmark 3D' : '28×28 Pixel CNN'}`, 'info');
 }
 
 async function loadSignSyncModels() {
@@ -1044,9 +316,6 @@ async function loadSignSyncModels() {
     document.getElementById('statPredTime').textContent = 'Local inference';
     document.getElementById('tfBackend').textContent = 'PyTorch CPU';
     document.getElementById('classCount').textContent = `${info.static_letters.length + info.dynamic_letters.length} letters`;
-    document.getElementById('engineIcon').textContent = '🤟';
-    document.getElementById('engineText').textContent = 'SignSync MLP + LSTM';
-    document.getElementById('engineBtn').className = 'btn btn-primary';
     document.getElementById('debugEngineName').textContent = 'SignSync MLP + J/Z LSTM';
     setStatus('Models Ready — Show Hand');
     showToast('Recognition models loaded. Camera stays on this device.', 'success');
@@ -1054,6 +323,7 @@ async function loadSignSyncModels() {
     document.getElementById('loadingOverlay').classList.add('hidden');
     document.getElementById('modelPanel').style.display = 'block';
     setStatus('Recognition service unavailable', false);
+    document.getElementById('setupErrorTitle').textContent = 'Recognition unavailable';
     const detail = document.getElementById('projectModelError');
     if (detail) detail.textContent = err.message || String(err);
     const reason = err && err.message ? err.message : String(err);
@@ -1914,8 +1184,18 @@ function speakLetter(letter) {
   window.speechSynthesis.speak(utterance);
 }
 
+function deleteLastLetter() {
+  state.text = state.text.slice(0, -1);
+  document.getElementById('textContent').textContent = state.text;
+}
+
 function clearText() {
+  state.motionSettleUntil = 0;
   state.text = '';
+  state.pendingLetter = null;
+  state.pendingSince = 0;
+  state.pendingMode = null;
+  state.pendingCount = 0;
   state.predictionBuffer = [];
   state.lastPrediction = null;
   document.getElementById('textContent').textContent = '';
@@ -1923,7 +1203,9 @@ function clearText() {
   document.getElementById('gestureName').textContent = 'Waiting...';
   document.getElementById('gestureDesc').textContent = 'Show a hand sign';
   document.getElementById('confidenceFill').style.width = '0%';
-  document.getElementById('confidenceValue').textContent = '0%';
+  document.getElementById('confidenceValue').textContent = '?';
+  document.getElementById('liveConfidence').hidden = true;
+  document.getElementById('liveConfidence').hidden = true;
   showToast('Text cleared', 'info');
 }
 
@@ -1937,6 +1219,7 @@ function speakText() {
     window.speechSynthesis.cancel();
     state.isSpeaking = false;
     document.getElementById('speakBtn').classList.remove('speaking');
+    document.getElementById('speakBtn').textContent = 'Speak';
     return;
   }
   const utterance = new SpeechSynthesisUtterance(state.text);
@@ -1951,10 +1234,10 @@ function speakText() {
     document.getElementById('speakBtn').classList.add('speaking');
     document.getElementById('speakBtn').innerHTML = '<span>⏹️</span> Stop Speaking';
   };
-  utterance.onend = () => {
+  utterance.onend = utterance.onerror = () => {
     state.isSpeaking = false;
     document.getElementById('speakBtn').classList.remove('speaking');
-    document.getElementById('speakBtn').innerHTML = '<span>🔊</span> Speak Translation';
+    document.getElementById('speakBtn').innerHTML = '<span>🔊</span> Speak';
   };
   window.speechSynthesis.speak(utterance);
 }
@@ -2083,6 +1366,7 @@ async function initCamera() {
     await camera.start();
     state.legacyCamera = camera;
     state.cameraActive = true;
+    document.getElementById('cameraEmpty').hidden = true;
     const toggle = document.getElementById('liveToggleBtn');
     if (toggle) toggle.textContent = 'Pause recognition';
     setStatus('Camera Active');
@@ -2095,8 +1379,17 @@ async function initCamera() {
 }
 
 function stopProjectCamera() {
+  if (state.projectOverlayFrame !== null) {
+    cancelAnimationFrame(state.projectOverlayFrame);
+    state.projectOverlayFrame = null;
+  }
+  if (state.projectVideoCallback !== null && videoElement.cancelVideoFrameCallback) {
+    videoElement.cancelVideoFrameCallback(state.projectVideoCallback);
+    state.projectVideoCallback = null;
+  }
   state.projectGeneration++;
   state.cameraActive = false;
+  document.getElementById('cameraEmpty').hidden = false;
   const toggle = document.getElementById('liveToggleBtn');
   if (toggle) toggle.textContent = 'Start recognition';
   if (state.projectRequestController) {
@@ -2122,15 +1415,21 @@ function stopProjectCamera() {
     state.projectStream = null;
   }
   if (videoElement.srcObject) videoElement.srcObject = null;
+  resetProjectPrediction();
+  document.getElementById('handStatus').textContent = 'Camera stopped';
+  document.getElementById('liveFps').textContent = '-- FPS';
 }
 
 function resetProjectPrediction() {
+  state.motionSettleUntil = 0;
   state.projectLandmarks = null;
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   state.predictionBuffer = [];
   state.lastPrediction = null;
   state.pendingLetter = null;
   state.pendingSince = 0;
+  state.pendingMode = null;
+  state.pendingCount = 0;
   const display = document.getElementById('gestureDisplay');
   if (display) {
     display.textContent = '?';
@@ -2139,54 +1438,37 @@ function resetProjectPrediction() {
   document.getElementById('gestureName').textContent = 'Waiting...';
   document.getElementById('gestureDesc').textContent = 'Show a hand sign';
   document.getElementById('confidenceFill').style.width = '0%';
-  document.getElementById('confidenceValue').textContent = '0%';
+  document.getElementById('confidenceValue').textContent = '?';
+  document.getElementById('liveConfidence').hidden = true;
+  document.getElementById('liveConfidence').hidden = true;
 }
 
 function drawProjectLandmarks(landmarks) {
-  const width = canvasElement.width;
-  const height = canvasElement.height;
-  const points = landmarks.map(point => ({
-    x: (state.flipHorizontal ? point.x : 1 - point.x),
-    y: point.y,
-    z: point.z || 0
-  }));
-  const connections = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
-  canvasCtx.strokeStyle = 'rgba(0, 212, 170, 0.68)';
-  canvasCtx.lineWidth = 2;
-  canvasCtx.beginPath();
-  connections.forEach(([start, end]) => {
-    canvasCtx.moveTo(points[start].x * width, points[start].y * height);
-    canvasCtx.lineTo(points[end].x * width, points[end].y * height);
-  });
-  canvasCtx.stroke();
-  canvasCtx.fillStyle = 'rgba(0, 212, 170, 0.9)';
-  canvasCtx.beginPath();
-  points.forEach(point => {
-    canvasCtx.moveTo(point.x * width + 3, point.y * height);
-    canvasCtx.arc(point.x * width, point.y * height, 3, 0, 2 * Math.PI);
-  });
-  canvasCtx.fill();
-  const xs = points.map(point => point.x * width);
-  const ys = points.map(point => point.y * height);
-  const pad = 18;
-  const left = Math.max(0, Math.min(...xs) - pad);
-  const top = Math.max(0, Math.min(...ys) - pad);
-  const right = Math.min(width, Math.max(...xs) + pad);
-  const bottom = Math.min(height, Math.max(...ys) + pad);
-  canvasCtx.strokeStyle = 'rgba(124, 58, 237, 0.8)';
-  canvasCtx.lineWidth = 2;
-  canvasCtx.strokeRect(left, top, right - left, bottom - top);
+  return SignSyncLandmarks.draw(canvasCtx, landmarks, canvasElement.width, canvasElement.height);
 }
 
 function renderProjectOverlay() {
   const startedAt = performance.now();
-  canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-  if (state.projectLandmarks) drawProjectLandmarks(state.projectLandmarks);
-  document.getElementById('statRenderTime').textContent = `${(performance.now() - startedAt).toFixed(2)} ms`;
+  try {
+    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    if (state.projectLandmarks) drawProjectLandmarks(state.projectLandmarks);
+    document.getElementById('statRenderTime').textContent = `${(performance.now() - startedAt).toFixed(2)} ms`;
+  } catch (error) {
+    // Visualization must never discard a valid model prediction.
+    state.projectLandmarks = null;
+    console.warn('Hand overlay unavailable:', error);
+  }
 }
 
 function applyProjectPrediction(result) {
   state.projectLandmarks = result.hand_detected ? result.landmarks : null;
+  // Draw once on the next browser paint, outside the recognition request.
+  if (state.projectOverlayFrame === null) {
+    state.projectOverlayFrame = requestAnimationFrame(() => {
+      state.projectOverlayFrame = null;
+      renderProjectOverlay();
+    });
+  }
   document.getElementById('handStatus').textContent = result.hand_detected ? 'Detected' : 'Not detected';
   document.getElementById('handStatus').style.color = result.hand_detected ? 'var(--primary)' : 'var(--text-muted)';
   const timing = result.timings_ms || {};
@@ -2206,49 +1488,65 @@ function applyProjectPrediction(result) {
     resetProjectPrediction();
     return;
   }
-  renderProjectOverlay();
-
   const letter = result.letter;
   const confidence = Number(result.confidence) || 0;
-  const confidencePercent = Math.round(confidence * 100);
-  document.getElementById('confidenceFill').style.width = `${confidencePercent}%`;
-  document.getElementById('confidenceValue').textContent = `${confidencePercent}%${letter ? ` (${letter})` : ''}`;
-  document.getElementById('debugEngineName').textContent = result.mode === 'LSTM'
-    ? 'J/Z temporal LSTM (30 × 126)'
-    : 'Static MLP (63 normalized landmarks)';
+  const mode = result.mode;
+  const now = performance.now();
+  const confirmationDelayMs = 600;
+  // Keep sampling motion continuously; delay only the visible/spoken result.
+  if (mode === 'LSTM') state.motionSettleUntil = now + confirmationDelayMs;
+  document.getElementById('debugEngineName').textContent = mode === 'LSTM'
+    ? 'J/Z temporal LSTM (30 x 126)' : 'Static MLP (63 normalized landmarks)';
 
-  if (letter) {
-    updateGestureDisplay(letter, confidence);
-    if (result.mode === 'LSTM') {
-      state.pendingLetter = null;
-      state.pendingSince = 0;
-      if (letter !== state.lastPrediction) {
-        addText(letter);
-        speakLetter(letter);
-        state.lastPrediction = letter;
-      }
-    } else {
-      if (letter !== state.pendingLetter) {
-        state.pendingLetter = letter;
-        state.pendingSince = performance.now();
-      } else if (performance.now() - state.pendingSince >= 1500 && letter !== state.lastPrediction) {
-        addText(letter);
-        speakLetter(letter);
-        state.lastPrediction = letter;
-      }
-    }
-  } else if (result.mode === 'LSTM') {
-    // The source model's STATIC class marks transitions between poses.
-    state.lastPrediction = null;
+  const validLetter = mode === 'LSTM' ? ['J', 'Z'].includes(letter)
+    : mode === 'MLP' && typeof letter === 'string' && /^[A-IK-Y]$/.test(letter);
+  if (!validLetter || confidence < 0.60) {
     state.pendingLetter = null;
     state.pendingSince = 0;
+    state.pendingMode = null;
+    state.pendingCount = 0;
+    if (mode === 'LSTM') state.lastPrediction = null;
   } else {
-    state.pendingLetter = null;
-    state.pendingSince = 0;
+    if (letter !== state.pendingLetter || mode !== state.pendingMode) {
+      state.pendingLetter = letter;
+      state.pendingMode = mode;
+      state.pendingSince = now;
+      state.pendingCount = 1;
+    } else {
+      state.pendingCount++;
+    }
+    const heldFor = now - state.pendingSince;
+    // Keep brief fluctuations out of both the visible result and spoken text.
+    const motionSettled = mode === 'LSTM' || now >= state.motionSettleUntil;
+    const stable = state.pendingCount >= 3 && heldFor >= confirmationDelayMs && motionSettled;
+    if (stable) {
+      updateGestureDisplay(letter, confidence);
+      document.getElementById('liveConfidence').hidden = false;
+      const percent = Math.round(confidence * 100);
+      document.getElementById('confidenceFill').style.width = `${percent}%`;
+      document.getElementById('confidenceValue').textContent = `${percent}% (${letter})`;
+      if ((mode === 'LSTM' || heldFor >= 1500) && letter !== state.lastPrediction) {
+        addText(letter);
+        speakLetter(letter);
+        state.lastPrediction = letter;
+      }
+      return;
+    }
   }
+  // Do not leave an old letter or confidence looking like a current detection.
+  document.getElementById('gestureDisplay').textContent = '?';
+  document.getElementById('gestureName').textContent = 'Confirming sign...';
+  document.getElementById('gestureDesc').textContent = mode === 'LSTM'
+    ? 'Complete the movement' : now < state.motionSettleUntil
+      ? 'Waiting for the movement to settle' : 'Hold the sign steady for a moment';
+  document.getElementById('confidenceFill').style.width = '0%';
+  document.getElementById('confidenceValue').textContent = '?';
+  document.getElementById('liveConfidence').hidden = true;
+
 }
 
 async function initProjectCamera() {
+  if (window.signSyncMediaTestBusy || (window.SignSyncNavigation && !SignSyncNavigation.canRun())) return;
   stopProjectCamera();
   const cameraGeneration = state.projectGeneration;
   if (state.legacyCamera) {
@@ -2267,6 +1565,12 @@ async function initProjectCamera() {
       return;
     }
     state.projectStream = stream;
+    stream.getVideoTracks().forEach(track => track.addEventListener('ended', () => {
+      if (cameraGeneration !== state.projectGeneration) return;
+      stopProjectCamera();
+      setStatus('Camera disconnected', false);
+      showToast('Camera disconnected. Reconnect it and start recognition.', 'error');
+    }, {once:true}));
     videoElement.srcObject = stream;
     await videoElement.play();
     if (cameraGeneration !== state.projectGeneration) {
@@ -2275,6 +1579,8 @@ async function initProjectCamera() {
       return;
     }
     state.cameraActive = true;
+    document.getElementById('cameraEmpty').hidden = true;
+    document.getElementById('modelPanel').style.display = 'none';
     const toggle = document.getElementById('liveToggleBtn');
     if (toggle) toggle.textContent = 'Pause recognition';
     state.backendErrorShown = false;
@@ -2337,9 +1643,9 @@ async function initProjectCamera() {
       const countPresentedFrame = () => {
         if (!state.cameraActive || state.projectGeneration !== cameraGeneration) return;
         presentedFrameCallbacks++;
-        videoElement.requestVideoFrameCallback(countPresentedFrame);
+        state.projectVideoCallback = videoElement.requestVideoFrameCallback(countPresentedFrame);
       };
-      videoElement.requestVideoFrameCallback(countPresentedFrame);
+      state.projectVideoCallback = videoElement.requestVideoFrameCallback(countPresentedFrame);
     }
     const inferenceIntervalMs = 1000 / 30;
 
@@ -2347,6 +1653,7 @@ async function initProjectCamera() {
       if (!state.cameraActive || state.engine !== 'project' || cameraGeneration !== state.projectGeneration) return;
       const sampleStartedAt = performance.now();
       let requestController = null;
+      let requestTimeout = null;
       try {
         if (videoElement.readyState < 2) throw new Error('Waiting for a webcam frame.');
         const captureStartedAt = performance.now();
@@ -2359,6 +1666,7 @@ async function initProjectCamera() {
         if (cameraGeneration !== state.projectGeneration || !state.cameraActive) return;
         requestController = new AbortController();
         state.projectRequestController = requestController;
+        requestTimeout = setTimeout(() => requestController.abort(), 10000);
         state.projectPendingRequests++;
         document.getElementById('statPendingRequests').textContent = `${state.projectPendingRequests}`;
         const requestStartedAt = performance.now();
@@ -2367,6 +1675,9 @@ async function initProjectCamera() {
           signal: requestController.signal
         });
         if (response.status === 429) {
+          state.projectLandmarks = null;
+          renderProjectOverlay();
+          document.getElementById('handStatus').textContent = 'Tracker busy';
           await response.json();
           state.projectDroppedFrames++;
           document.getElementById('statDroppedFrames').textContent = `${state.projectDroppedFrames}`;
@@ -2391,7 +1702,7 @@ async function initProjectCamera() {
         if (state.backendErrorShown) setStatus('Camera active · SignSync models');
         state.backendErrorShown = false;
       } catch (err) {
-        if (err.name !== 'AbortError' && cameraGeneration === state.projectGeneration
+        if (state.cameraActive && cameraGeneration === state.projectGeneration
             && err.message !== 'Waiting for a webcam frame.') {
           setStatus('Recognition error', false);
           document.getElementById('handStatus').textContent = 'Unavailable';
@@ -2399,11 +1710,12 @@ async function initProjectCamera() {
           state.projectLandmarks = null;
           resetProjectPrediction();
           if (!state.backendErrorShown) {
-            showToast(`Recognition failed: ${err.message || err}`, 'error');
+            showToast(`Recognition unavailable. ${err.name === 'AbortError' ? 'The tracker timed out. Try restarting recognition.' : err.message || err}`, 'error');
             state.backendErrorShown = true;
           }
         }
       } finally {
+        clearTimeout(requestTimeout);
         if (requestController) {
           state.projectPendingRequests = Math.max(0, state.projectPendingRequests - 1);
           document.getElementById('statPendingRequests').textContent = `${state.projectPendingRequests}`;
@@ -2419,8 +1731,10 @@ async function initProjectCamera() {
     state.projectInferenceStartedAt = performance.now();
     processLatestFrame();
   } catch (err) {
+    if (cameraGeneration !== state.projectGeneration) return;
     stopProjectCamera();
     setStatus('Camera Error', false);
+    document.getElementById('setupErrorTitle').textContent = 'Camera unavailable';
     const reason = err.name === 'NotAllowedError' ? 'Camera permission was denied. Allow camera access and retry.'
       : err.name === 'NotFoundError' ? 'No webcam was found on this device.'
       : err.name === 'NotReadableError' ? 'The webcam is busy in another application.'
@@ -2456,7 +1770,7 @@ if (modelDropZone) {
 
 // ==================== INIT ====================
 window.addEventListener('load', () => {
-  // Prefer SignSync's trained MLP/LSTM pipeline; browser-based engines remain available.
+  // SignSync uses the local MLP/LSTM recognition pipeline.
   loadSignSyncModels();
 });
 
@@ -2466,5 +1780,7 @@ if (window.speechSynthesis.onvoiceschanged !== undefined) {
   window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
 }
 </script>
+<script src="./assets/navigation.js"></script>
+<script src="./assets/media-tests.js"></script>
 </body>
 </html>

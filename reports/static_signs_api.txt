@@ -1,0 +1,29 @@
+Static signs automated test
+Pipeline: http://127.0.0.1:8001
+Correct: 17/24
+Expected labels are read from filenames only for evaluation, never passed to inference.
+
+A: predicted A; confidence 0.9999994039535522; Correct
+B: predicted B; confidence 0.9998739957809448; Correct
+C: predicted B; confidence 0.9218469262123108; MLP classified extracted landmarks as a different letter; exact cause requires further evidence
+D: predicted X; confidence 0.6956679821014404; MLP classified extracted landmarks as a different letter; exact cause requires further evidence
+E: predicted M; confidence 0.6079481840133667; MLP classified extracted landmarks as a different letter; exact cause requires further evidence
+F: predicted F; confidence 0.9996539354324341; Correct
+G: predicted G; confidence 0.9999774694442749; Correct
+H: predicted H; confidence 0.9683849215507507; Correct
+I: predicted I; confidence 0.8659444451332092; Correct
+K: predicted K; confidence 0.9999803304672241; Correct
+L: predicted L; confidence 0.9993271827697754; Correct
+M: predicted M; confidence 0.9940724968910217; Correct
+N: predicted NONE; confidence 0.4596700668334961; MLP confidence below acceptance threshold
+O: predicted R; confidence 0.6192412376403809; MLP classified extracted landmarks as a different letter; exact cause requires further evidence
+P: predicted Q; confidence 0.9999115467071533; MLP classified extracted landmarks as a different letter; exact cause requires further evidence
+Q: predicted Q; confidence 1.0; Correct
+R: predicted R; confidence 0.9999123811721802; Correct
+S: predicted S; confidence 0.9999034404754639; Correct
+T: predicted T; confidence 0.9411941170692444; Correct
+U: predicted R; confidence 0.9974992871284485; MLP classified extracted landmarks as a different letter; exact cause requires further evidence
+V: predicted V; confidence 0.9958819150924683; Correct
+W: predicted W; confidence 0.9999982118606567; Correct
+X: predicted X; confidence 0.9794595837593079; Correct
+Y: predicted Y; confidence 0.9999579191207886; Correct

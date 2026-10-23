@@ -1,0 +1,218 @@
+[
+  {
+    "file": "static_signs_images\\A.png",
+    "expected": "A",
+    "sha256": "ea6217e1749d8a395e4ebfc0fbb4ac314b03c4d003d894dda179321809311ecf",
+    "predicted": "A",
+    "confidence": 0.9999948740005493,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\B.png",
+    "expected": "B",
+    "sha256": "60b326af832b3ccc89c9f74521597730509918b87fc507bfbafdcc11a1cdfc63",
+    "predicted": "B",
+    "confidence": 0.9999055862426758,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\C.png",
+    "expected": "C",
+    "sha256": "4f8046806ec247c956f04b840c7a0e5e028544e4ec18c4a1fe5b76610daacfa3",
+    "predicted": "B",
+    "confidence": 0.9222127795219421,
+    "correct": false,
+    "reason": "MLP classified extracted landmarks as a different letter; exact cause requires further evidence"
+  },
+  {
+    "file": "static_signs_images\\D.png",
+    "expected": "D",
+    "sha256": "eda5860d269f423420a6491de5471aad88ce36d7a7fb86f59c4ef2089a1ef11b",
+    "predicted": "X",
+    "confidence": 0.8708503842353821,
+    "correct": false,
+    "reason": "MLP classified extracted landmarks as a different letter; exact cause requires further evidence"
+  },
+  {
+    "file": "static_signs_images\\E.png",
+    "expected": "E",
+    "sha256": "9e6b4dfc4c534ddb7acba289ba6e3bab97788da7f4abccf0905630a552c6be7c",
+    "predicted": "E",
+    "confidence": 0.7071660161018372,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\F.png",
+    "expected": "F",
+    "sha256": "feef0c0a88729a8f2a192ddad1c3f405473803c6ff87030093c4d5a0f0331f74",
+    "predicted": "F",
+    "confidence": 0.9986656904220581,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\G.png",
+    "expected": "G",
+    "sha256": "390191d867e9180dd06229d85d58bc2dbe6949592f7387c312fd132528e2e005",
+    "predicted": "G",
+    "confidence": 0.9998925924301147,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\H.png",
+    "expected": "H",
+    "sha256": "3989d05ad41b9d13618ac046d451d8538598755e4cf30f0c849f3e3d36b5e737",
+    "predicted": "H",
+    "confidence": 0.9185186624526978,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\I.png",
+    "expected": "I",
+    "sha256": "bb91aadc15d9d560ed34eb8c0e133a3fc18f9850b105fcbb348da74b014b0eef",
+    "predicted": "I",
+    "confidence": 0.9560840725898743,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\K.png",
+    "expected": "K",
+    "sha256": "e5eec6236129fe9784c57b92ff939f7b219583ee5eb7e4e6dc6e835f78924c2a",
+    "predicted": "K",
+    "confidence": 0.9999587535858154,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\L.png",
+    "expected": "L",
+    "sha256": "a25150652852a466cd35e2817b1ae57b7499fbaf241a2a328cd781167072f10f",
+    "predicted": "L",
+    "confidence": 0.9999523162841797,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\M.png",
+    "expected": "M",
+    "sha256": "f2c5878b9153e2b5b86a602dbfaa008f65a10010cbe483cda18459e9a8fdb836",
+    "predicted": "M",
+    "confidence": 0.9983547329902649,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\N.png",
+    "expected": "N",
+    "sha256": "9a15303c11e88c7fe36248b8142d9021ba1fa693b53ab41b07487567236c8c36",
+    "predicted": null,
+    "confidence": 0.3546268045902252,
+    "correct": false,
+    "reason": "MLP confidence below acceptance threshold"
+  },
+  {
+    "file": "static_signs_images\\O.png",
+    "expected": "O",
+    "sha256": "a7ca304f0a8d9f454e4fd54a7da6676497254b6de423536856de9a58cd8f01e1",
+    "predicted": "E",
+    "confidence": 0.9106441736221313,
+    "correct": false,
+    "reason": "MLP classified extracted landmarks as a different letter; exact cause requires further evidence"
+  },
+  {
+    "file": "static_signs_images\\P.png",
+    "expected": "P",
+    "sha256": "4702115b4abaf2daefdbb3457171c3e14b843309adedd8c2b256e5669105edf0",
+    "predicted": "Q",
+    "confidence": 0.999994158744812,
+    "correct": false,
+    "reason": "MLP classified extracted landmarks as a different letter; exact cause requires further evidence"
+  },
+  {
+    "file": "static_signs_images\\Q.png",
+    "expected": "Q",
+    "sha256": "f96c5ab903f75c2d11769d8e2659c038f8ca8d978f2cbc1aa1de4fefb8a434ca",
+    "predicted": "Q",
+    "confidence": 0.9999998807907104,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\R.png",
+    "expected": "R",
+    "sha256": "bc86d92fd7d262425f84b4fab3d8c36a5dd8e1616e3b34ce8db032a525585493",
+    "predicted": "R",
+    "confidence": 0.9999663829803467,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\S.png",
+    "expected": "S",
+    "sha256": "b6b99da09680fbb37980d3d2f76a63329db6112c2e46e2761031bddfa8fdacab",
+    "predicted": "S",
+    "confidence": 0.9993799924850464,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\T.png",
+    "expected": "T",
+    "sha256": "ab4ec97573ef65023af498866096ffb48258443c29b30bb7b30c8fa7ebc60223",
+    "predicted": "T",
+    "confidence": 0.9928493499755859,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\U.png",
+    "expected": "U",
+    "sha256": "50d8264409a795f9e6b91d3f1aa6e106fd496a3161a61c3ae0250dc9893ff67e",
+    "predicted": "R",
+    "confidence": 0.9994490742683411,
+    "correct": false,
+    "reason": "MLP classified extracted landmarks as a different letter; exact cause requires further evidence"
+  },
+  {
+    "file": "static_signs_images\\V.png",
+    "expected": "V",
+    "sha256": "c67681503fc74c37b4fbe26ab90079ae75506d6dc90a37ce4a18e347516ccfdd",
+    "predicted": "V",
+    "confidence": 0.9994686245918274,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\W.png",
+    "expected": "W",
+    "sha256": "0ea48093d251816c3e13dd6aef5037b073fed54ff297246d0199fab4d819db4e",
+    "predicted": "W",
+    "confidence": 0.999998927116394,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\X.png",
+    "expected": "X",
+    "sha256": "8dae2bd46551cbedef17e2ee992e170f0042c42a5fa81fe1cbc22fcfecc6e476",
+    "predicted": "X",
+    "confidence": 0.9979173541069031,
+    "correct": true,
+    "reason": "Correct"
+  },
+  {
+    "file": "static_signs_images\\Y.png",
+    "expected": "Y",
+    "sha256": "30d620ff1952159be516b93cf6ee9fb8f4b2b63f92ca1a716ca90681eaa847fc",
+    "predicted": "Y",
+    "confidence": 0.9998171925544739,
+    "correct": true,
+    "reason": "Correct"
+  }
+]

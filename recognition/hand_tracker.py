@@ -155,11 +155,13 @@ class HandTracker:
         max_num_hands: int = 1,
         min_detection_confidence: float = 0.7,
         min_tracking_confidence: float = 0.7,
+        static_image_mode: bool = False,
         # Legacy parameter ignored — maintained for compatibility with
         # calls that included static_image_mode or model_complexity
         **_kwargs: Any,
     ) -> None:
         self._model_path             = _ensure_model(Path(model_path))
+        self._static_image_mode      = static_image_mode
         self._max_num_hands          = max_num_hands
         self._min_detection_conf     = min_detection_confidence
         self._min_tracking_conf      = min_tracking_confidence
@@ -174,7 +176,7 @@ class HandTracker:
             base_options=mp_python.BaseOptions(
                 model_asset_path=str(self._model_path)
             ),
-            running_mode=mp_vision.RunningMode.VIDEO,
+            running_mode=(mp_vision.RunningMode.IMAGE if self._static_image_mode else mp_vision.RunningMode.VIDEO),
             num_hands=self._max_num_hands,
             min_hand_detection_confidence=self._min_detection_conf,
             min_hand_presence_confidence=self._min_detection_conf,
@@ -232,7 +234,8 @@ class HandTracker:
         timestamp_ms = max(int(time.monotonic() * 1000), self._last_timestamp_ms + 1)
         self._last_timestamp_ms = timestamp_ms
 
-        result = self._landmarker.detect_for_video(mp_image, timestamp_ms)
+        result = (self._landmarker.detect(mp_image) if self._static_image_mode
+                  else self._landmarker.detect_for_video(mp_image, timestamp_ms))
 
         # Web applications render landmarks in their own overlay.  Let them
         # skip this copy and OpenCV skeleton when only model landmarks are used.

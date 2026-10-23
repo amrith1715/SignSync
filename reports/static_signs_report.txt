@@ -1,0 +1,76 @@
+SIGNSYNC STATIC SIGNS TEST AND CORRECTION REPORT
+Date: 2026-10-23
+
+Input folder: C:\Users\adwai\Downloads\signsync\static_signs_images
+24 labeled reference images; J and Z excluded.
+Baseline: 17/24 (70.83%). After aspect-ratio correction: 18/24 (75%).
+After supervised MLP adaptation: 24/24 (100%) on these KNOWN reference images.
+Live HTTP API: 24/24 on two consecutive runs, identical predictions and confidences.
+
+IMPORTANT EVALUATION LIMIT
+The chart images were used as labeled adaptation/training examples. The final 24/24 is therefore a resubstitution/regression result, NOT independent test accuracy. It does not establish accuracy on new photos, people, viewpoints, cropped screenshots, or lighting. Confidence is a model score, not a calibrated probability of correctness.
+
+PER-LETTER RESULTS
+Letter | Baseline output/confidence | Geometry fix output | Final API output/confidence | Result
+A      | A    100.000% | A    | A     99.997% | PASS
+B      | B     99.987% | B    | B     99.895% | PASS
+C      | B     92.185% | B    | C     99.049% | PASS
+D      | X     69.567% | X    | D     96.251% | PASS
+E      | M     60.795% | E    | E     94.793% | PASS
+F      | F     99.965% | F    | F     99.960% | PASS
+G      | G     99.998% | G    | G     99.996% | PASS
+H      | H     96.838% | H    | H     98.890% | PASS
+I      | I     86.594% | I    | I     99.404% | PASS
+K      | K     99.998% | K    | K     99.998% | PASS
+L      | L     99.933% | L    | L     99.984% | PASS
+M      | M     99.407% | M    | M     99.926% | PASS
+N      | NONE  45.967% | NONE | N     96.237% | PASS
+O      | R     61.924% | E    | O     89.876% | PASS
+P      | Q     99.991% | Q    | P     99.892% | PASS
+Q      | Q    100.000% | Q    | Q     99.702% | PASS
+R      | R     99.991% | R    | R     99.737% | PASS
+S      | S     99.990% | S    | S     99.920% | PASS
+T      | T     94.119% | T    | T     99.619% | PASS
+U      | R     99.750% | R    | U     97.036% | PASS
+V      | V     99.588% | V    | V     99.995% | PASS
+W      | W    100.000% | W    | W    100.000% | PASS
+X      | X     97.946% | X    | X     99.580% | PASS
+Y      | Y     99.996% | Y    | Y     99.947% | PASS
+
+REASONS AND CORRECTIONS
+1. Observed input geometry inconsistency: camera frames are 4:3; these uploads are square. MediaPipe x/z and y use different image dimensions, so the same pose can have different feature proportions. Uploads are now padded to 4:3 without stretching. This changed E from M (60.79%) to E (70.72%) before any model adaptation.
+2. C -> B (92.18% baseline): the MLP decision boundary rejected the labeled C reference despite a detected hand. Geometry alone did not resolve it.
+3. D -> X (69.57%): detected landmarks were assigned to X; geometry alone did not resolve it.
+4. N -> NONE (45.97%): hand detected, but top model score was below the existing 60% acceptance threshold. Geometry alone did not resolve it.
+5. O -> R (61.92%): geometry changed the wrong output to E; the classifier still did not identify O.
+6. P -> Q (99.99%): highly confident wrong classification; a confidence threshold would not fix this.
+7. U -> R (99.75%): highly confident confusion between these references; a confidence threshold would not fix this.
+For items 2-7, the directly observed cause is the trained classifier assigning the extracted feature vectors to the wrong class (or rejecting them). Photo/training distribution differences and landmark errors are plausible contributing factors, not individually proven causes: no ground-truth 3D landmark annotations exist for these photographs.
+
+MODEL ADAPTATION
+Used existing normalized landmark dataset: C:\Users\adwai\Downloads\sign-language-cv\data\processed\landmarks_norm_v2.csv
+Dataset rows: 7288. Replay-training split: 5466. Regression split: 1822, stratified with seed 42.
+Kept MLP architecture and scaler. Adapted its weights with original-data replay, all 24 chart landmark vectors, and small landmark-noise augmentation. BatchNorm running statistics remained fixed. No image filename, expected label, file hash, or lookup table is consulted by prediction.
+Accepted epoch: 5. Minimum correct-class score on the chart: 89.88%.
+Original-data regression accuracy: 99.8902% (1820/1822) before, 99.7805% (1818/1822) after; two additional errors. Acceptance tolerance was at most 0.5 percentage points; observed decrease was 0.1098 points.
+This split was held out from adaptation, but may overlap the original checkpoint training data. It is a regression check, not a new independent benchmark.
+
+PERSISTENCE AND RUNTIME
+Active model: models/mlp.pt (adapted weights saved to disk). Both static upload and live static recognition load this model.
+Original backup: models/mlp_before_static_adaptation.pt. Candidate copy: models/mlp_static_candidate.pt.
+Image preprocessing persisted in recognition_service.py. The source images are unchanged.
+LSTM weights and dynamic preprocessing were not changed. Live webcam behavior and J/Z accuracy were not tested in this static-image audit.
+The server was restarted. A duplicate older SignSync process was stopped after stale-model responses were detected. Final API verification was performed only after that cleanup.
+Retesting the same unchanged 24 files with the saved model and preprocessing is expected to reproduce these results. New image accuracy requires independent labeled images.
+
+RERUN FROM THE SIGNSYNC FOLDER
+.\.venv\Scripts\python.exe audit_static_signs.py --url http://127.0.0.1:8001 --output reports/static_signs_retest.json
+This generates JSON and a readable TXT summary. Keep live recognition paused while auditing to avoid a busy-service response.
+
+ARTIFACTS
+Baseline: static_signs_baseline.json; geometry: static_signs_after.json; local final: static_signs_final.json.
+API final: static_signs_api_final.json/.txt; repeat: static_signs_api_repeat.json/.txt.
+Training metrics and caveats: static_adaptation.json. Automation: audit_static_signs.py. Adaptation procedure: adapt_static_mlp.py.
+Input verification: 24 correctly named uppercase 224 x 224 RGB PNG files. Input SHA-256 hashes are stored in each audit JSON.
+Active MLP SHA-256: d7a2be24a3b4103fce064dd67efc0ef98bbc9f2c0c751d4cac79cb561bf9f289
+Original MLP SHA-256: a8cccff175987c1a7213cf370663fc5f88a00e08fc7079efe7c4b34ae77ac548

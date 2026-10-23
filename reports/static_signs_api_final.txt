@@ -1,0 +1,29 @@
+Static signs automated test
+Pipeline: http://127.0.0.1:8001
+Correct: 24/24
+Expected labels are read from filenames only for evaluation, never passed to inference.
+
+A: predicted A; confidence 0.9999693632125854; Correct
+B: predicted B; confidence 0.9989516735076904; Correct
+C: predicted C; confidence 0.9904937148094177; Correct
+D: predicted D; confidence 0.9625072479248047; Correct
+E: predicted E; confidence 0.9479290246963501; Correct
+F: predicted F; confidence 0.9996033310890198; Correct
+G: predicted G; confidence 0.9999634027481079; Correct
+H: predicted H; confidence 0.9889007806777954; Correct
+I: predicted I; confidence 0.9940379858016968; Correct
+K: predicted K; confidence 0.9999812841415405; Correct
+L: predicted L; confidence 0.9998416900634766; Correct
+M: predicted M; confidence 0.9992606043815613; Correct
+N: predicted N; confidence 0.9623749852180481; Correct
+O: predicted O; confidence 0.8987630009651184; Correct
+P: predicted P; confidence 0.9989166259765625; Correct
+Q: predicted Q; confidence 0.9970169067382812; Correct
+R: predicted R; confidence 0.9973723888397217; Correct
+S: predicted S; confidence 0.9992021918296814; Correct
+T: predicted T; confidence 0.9961947202682495; Correct
+U: predicted U; confidence 0.9703626036643982; Correct
+V: predicted V; confidence 0.999948263168335; Correct
+W: predicted W; confidence 0.9999973773956299; Correct
+X: predicted X; confidence 0.9958011507987976; Correct
+Y: predicted Y; confidence 0.9994731545448303; Correct

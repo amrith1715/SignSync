@@ -1,0 +1,41 @@
+{
+  "dataset": "C:\\Users\\adwai\\Downloads\\sign-language-cv\\data\\processed\\landmarks_norm_v2.csv",
+  "dataset_sha256": "e9a955e196fbc214f5fcdddddabaae8279a10f065aed4dcec91f5323ec50ee4b",
+  "source_rows": 7288,
+  "regression_rows": 1822,
+  "baseline_regression_accuracy": 0.9989023208618164,
+  "caveat": "Chart images are adaptation/training examples. Regression split may overlap original checkpoint training; it is not an independent test.",
+  "history": [
+    {
+      "epoch": 1,
+      "regression_accuracy": 0.9989023208618164,
+      "chart_training_accuracy": 0.8333333134651184,
+      "minimum_chart_confidence": 0.0014735215809196234
+    },
+    {
+      "epoch": 2,
+      "regression_accuracy": 0.9989023208618164,
+      "chart_training_accuracy": 0.9166666865348816,
+      "minimum_chart_confidence": 0.02425069361925125
+    },
+    {
+      "epoch": 3,
+      "regression_accuracy": 0.9983534812927246,
+      "chart_training_accuracy": 1.0,
+      "minimum_chart_confidence": 0.4927128553390503
+    },
+    {
+      "epoch": 4,
+      "regression_accuracy": 0.997804582118988,
+      "chart_training_accuracy": 1.0,
+      "minimum_chart_confidence": 0.8079257011413574
+    },
+    {
+      "epoch": 5,
+      "regression_accuracy": 0.997804582118988,
+      "chart_training_accuracy": 1.0,
+      "minimum_chart_confidence": 0.8987630009651184
+    }
+  ],
+  "accepted": true
+}
