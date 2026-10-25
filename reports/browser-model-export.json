@@ -1,0 +1,22 @@
+{
+  "static": {
+    "cases": 24,
+    "max_absolute_logit_error": 4.76837158203125e-06,
+    "sha256": "c1c9c76d8a24c5b6b3e453f0dfaec4d360791be00fd473a1a04472311487b75a"
+  },
+  "dynamic": {
+    "cases": 24,
+    "max_absolute_logit_error": 9.5367431640625e-07,
+    "sha256": "8221048c84682a551f3b6560bdd2f3be59ca2c758890d89f5d7697996b5e77c1"
+  },
+  "recorded_dynamic": {
+    "cases": 619,
+    "class_counts": {
+      "J": 201,
+      "Z": 200,
+      "STATIC": 218
+    },
+    "max_absolute_logit_error": 1.9669532775878906e-06,
+    "purpose": "Conversion parity only; not held-out accuracy evaluation"
+  }
+}

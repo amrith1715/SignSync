@@ -4,24 +4,24 @@
     {
       "label": "J",
       "media_type": "video",
-      "path": "https://upload.wikimedia.org/wikipedia/commons/6/64/American_Sign_Language_demo_-_Travis_Dougherty.ogv",
-      "clip_start": 26.19,
-      "clip_end": 27.19,
-      "remote_test": "commons_alphabet_clip",
-      "source": "Travis Dougherty (Wikimedia Commons contributor Fuzheado), American Sign Language demo — alphabet",
-      "source_url": "https://commons.wikimedia.org/wiki/File:American_Sign_Language_demo_-_Travis_Dougherty.ogv",
-      "license": "CC BY-SA 3.0; attribution and share-alike required"
+      "path": "./dynamic_sign_videos/J.mp4",
+      "poster": "./dynamic_sign_videos/J.jpg",
+      "source": "SignSync AI-generated animated hand reference",
+      "duration_seconds": 6,
+      "perspective": "right-handed signer facing viewer",
+      "motion_reference": "https://www.lifeprint.com/asl101/topics/signingnotes.htm",
+      "provenance": "dynamic_sign_videos/source/generation.json"
     },
     {
       "label": "Z",
       "media_type": "video",
-      "path": "https://upload.wikimedia.org/wikipedia/commons/6/64/American_Sign_Language_demo_-_Travis_Dougherty.ogv",
-      "clip_start": 39.88,
-      "clip_end": 40.97,
-      "remote_test": "commons_alphabet_clip",
-      "source": "Travis Dougherty (Wikimedia Commons contributor Fuzheado), American Sign Language demo — alphabet",
-      "source_url": "https://commons.wikimedia.org/wiki/File:American_Sign_Language_demo_-_Travis_Dougherty.ogv",
-      "license": "CC BY-SA 3.0; attribution and share-alike required"
+      "path": "./dynamic_sign_videos/Z.mp4",
+      "poster": "./dynamic_sign_videos/Z.jpg",
+      "source": "SignSync AI-generated animated hand reference",
+      "duration_seconds": 6,
+      "perspective": "right-handed signer facing viewer",
+      "motion_reference": "https://www.lifeprint.com/asl101/pages-signs/z/z.htm",
+      "provenance": "dynamic_sign_videos/source/generation.json"
     }
   ]
 }

@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: signsync-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/status
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: SIGNSYNC_ALLOWED_ORIGINS
+        value: https://sign-sync-lemon.vercel.app
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: MKL_NUM_THREADS
+        value: "1"

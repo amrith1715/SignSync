@@ -1,0 +1,44 @@
+{
+  "format_version": 1,
+  "created_on": "2026-10-24",
+  "kind": "AI-generated animated hand illustrations",
+  "generator": "Built-in image_gen tool; no CLI or API key used",
+  "renderer": "scripts/render-dynamic-signs.py",
+  "output": {
+    "duration_seconds": 6,
+    "fps": 30,
+    "width": 380,
+    "height": 540,
+    "codec": "H.264",
+    "pixel_format": "yuv420p",
+    "audio": false,
+    "background": "white",
+    "perspective": "learner viewpoint; final frames horizontally flipped from generated signer-facing artwork"
+  },
+  "review": {
+    "status": "Visual motion and encoding checks; not independently reviewed by a fluent ASL signer",
+    "purpose": "Alphabet chart illustration, not a recording or recognition accuracy benchmark"
+  },
+  "motion_references": [
+    "https://www.lifeprint.com/asl101/topics/signingnotes.htm",
+    "https://www.lifeprint.com/asl101/pages-signs/z/z.htm",
+    "https://www.lifeprint.com/asl101/pages-layout/fingerspelling.htm"
+  ],
+  "assets": [
+    {
+      "file": "J-poses.png",
+      "references": [
+        "assets/asl/static/I.png"
+      ],
+      "prompt": "Use case scientific-educational. Create a 3-column by 2-row sprite sheet of SIX keyframes of a single identical photorealistic RIGHT HAND rotating smoothly about its VERTICAL FOREARM AXIS from PALM VIEW to BACK VIEW. 1536x1024, six equally sized square cells, transparent background with NO labels/text/grid/arrows. Same warm tan hand skin, anatomy and soft lighting as supplied I reference. IMPORTANT: The hand holds exactly the same rigid ASL I pose throughout: ONLY LITTLE FINGER is extended straight vertically UP, never bends or tilts; index/middle/ring stay tucked under thumb as fist. Exactly five digits. No index extension. Do not change finger shapes between cells. Change only whole hand/forearm axial rotation as a 3D object. Cell 1: palm facing camera as in reference; pinky at viewer-left, thumb viewer-right. Cell 2: turn palm 36 degrees inward, slightly narrower palm, little-finger edge moving forward. Cell 3: 72-degree rotation, NEAR EDGE-ON VIEW, palm and folded fingers mostly occluded, extended little finger still straight vertically up. Cell 4:108-degree rotation, opposite NEAR EDGE-ON VIEW, back of hand just beginning to become visible, extended pinky still straight vertically up. Cell 5:144-degree rotation, three-quarter BACK view, pinky toward viewer-right. Cell 6:180-degree rotation, BACK of hand faces camera, nails of curled fingers hidden, little finger still extended straight vertically up at viewer-right. All six images same scale with forearm entering each cell at its bottom center, short 8cm bare forearm, no cut fingers and 12% clear margin. Consistent wrist height, extended pinky fingertip height, skin texture and hand identity. This is one hand in six rotation phases, NOT six separate ASL signs. Prioritize the EDGE-ON middle views which must look distinctly narrow, like a real hand rotating in 3D. No second hand, no torso, no clothes, no jewelry, no ghosts or overlapping hands."
+    },
+    {
+      "file": "Z-hand.png",
+      "references": [
+        "assets/asl/static/D.png",
+        "assets/asl/static/I.png"
+      ],
+      "prompt": "Use case: scientific-educational. Asset type: photorealistic transparent hand cutout for animating the ASL letter Z. Input images are reference photographs for skin tone, hand identity, proportions, and lighting, not a background to reproduce. Generate exactly ONE anatomically correct RIGHT hand and a short bare forearm, palm facing the viewer, index finger extended straight up and the middle, ring and pinky tightly folded into the palm with thumb naturally holding the folded fingers. Match the light warm tan skin, natural creases, nails and soft diffuse illumination of both supplied hand photographs. The index should be at viewer-right of the folded knuckles and thumb at viewer-right side, like the reference D image, but thumb rests across folded fingers (not a ring/O gap). Straight natural wrist, five digits only, realistic hand structure, all fingertips and wrist fully contained. Isolate the entire hand and 8 cm of forearm on real transparent alpha, with 15% clear margin around hand. No face, torso, clothing, jewelry, text, labels, arrows, diagram, shadow backdrop or watermark. This is a single still pointing-hand pose for the Z's start; DO NOT draw a Z or try to show several hands."
+    }
+  ]
+}

@@ -100,8 +100,13 @@ class CORSHandler(SimpleHTTPRequestHandler):
             pathlib.Path(ROOT) / 'label_mapping.json',
             pathlib.Path(ROOT) / 'model.json',
             pathlib.Path(ROOT) / 'group1-shard1of1.bin',
+            *(pathlib.Path(ROOT) / 'dynamic_sign_videos' / filename
+              for filename in ('J.mp4', 'Z.mp4', 'J.jpg', 'Z.jpg')),
         }
-        public_directories = [pathlib.Path(ROOT) / 'assets', pathlib.Path(ROOT) / 'tfjs_model']
+        public_directories = [
+            pathlib.Path(ROOT) / 'assets',
+            pathlib.Path(ROOT) / 'tfjs_model',
+        ]
         if route == '/' or static_path in public_files or any(
             static_path == directory.resolve() or directory.resolve() in static_path.parents
             for directory in public_directories
@@ -134,7 +139,9 @@ class CORSHandler(SimpleHTTPRequestHandler):
                 self._json(200, result)
                 return
             size = int(self.headers.get('Content-Length', '0'))
-            limit = 50 * 1024 * 1024 if route == '/api/test-video' else 10 * 1024 * 1024
+            # Keep individual media tests below Vercel Functions' 4.5 MB
+            # request body cap if these routes are ever proxied through one.
+            limit = 4 * 1024 * 1024 if route in {'/api/test-image', '/api/test-video'} else 10 * 1024 * 1024
             if size <= 0 or size > limit:
                 self._json(413, {'error': f'Upload must be between 1 byte and {limit // (1024 * 1024)} MB.'})
                 return

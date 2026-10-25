@@ -10,6 +10,9 @@
       stopProjectCamera();
       setStatus('Recognition paused');
     }
+    if (current === 'alphabet' && next !== 'alphabet') {
+      document.querySelectorAll('#aslGrid video').forEach(video => video.pause());
+    }
     current = next;
     views.forEach(v => { v.hidden = v.dataset.view !== current; });
     document.querySelectorAll('[data-view-link]').forEach(a => {
@@ -20,7 +23,7 @@
     document.getElementById('menuToggle').setAttribute('aria-expanded', 'false');
     document.getElementById('testingCameraNotice').textContent = resume
       ? 'Live recognition is paused while you use another workspace. It resumes when you return to Recognition after testing.'
-      : 'Choose a file, review its preview, then click Predict. Files are sent to the SignSync recognition API.';
+      : 'Choose a file, review its preview, then click Predict. Files are processed on your device.';
     const heading = document.querySelector(`[data-view="${current}"] h1`);
     document.title = `${heading.textContent} · SignSync`;
     if (focus) heading.focus({preventScroll:true});

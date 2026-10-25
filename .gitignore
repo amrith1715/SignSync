@@ -6,6 +6,8 @@
 .vercel/
 vercel-dist/
 node_modules/
+assets/vendor/
+assets/browser-worker.js
 
 .venv/
 env/
@@ -40,3 +42,5 @@ assets/asl/static/*
 !assets/asl/static/*.png
 assets/asl/dynamic/*
 !assets/asl/dynamic/.gitkeep
+.vercel
+.env*

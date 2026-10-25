@@ -21,7 +21,7 @@
 <a href="#testing" data-view-link="testing"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v7l-6 9a1 1 0 0 0 1 2h14a1 1 0 0 0 1-2l-6-9V3M8 15h8"/></svg><span>Testing Lab</span></a>
 <a href="#alphabet" data-view-link="alphabet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6a3 3 0 0 1 3 3v14a4 4 0 0 0-4-2H4zM13 7a3 3 0 0 1 3-3h5v15h-5a3 3 0 0 0-3 2"/></svg><span>ASL Alphabet</span></a>
 <a href="#about" data-view-link="about"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/></svg><span>About</span></a></nav>
-  <div class="nav-footer"><span class="local-dot" aria-hidden="true"></span> SignSync service connected<small>Camera and uploads use the recognition API</small></div>
+  <div class="nav-footer"><span class="local-dot" aria-hidden="true"></span> Recognition on your device<small>Camera and files stay in your browser</small></div>
 </aside>
 <main id="mainContent" class="app-main" tabindex="-1">
   <section id="view-recognition" class="app-view" data-view="recognition" aria-labelledby="recognitionHeading">
@@ -41,24 +41,8 @@
           <div class="camera-label">Live camera</div>
           <div class="landmark-count"><span>Hand: <strong id="handStatus">Camera stopped</strong></span><span id="liveFps">— FPS</span></div>
         </div>
-        <div class="camera-controls"><button class="btn btn-primary" onclick="toggleLiveRecognition()" id="liveToggleBtn" type="button">Start recognition</button><button class="btn btn-secondary" id="diagnosticsToggle" onclick="toggleDebug()" type="button" aria-expanded="false" aria-controls="debugCard">Diagnostics</button><span class="camera-note">Camera frames are processed locally.</span></div>
+        <div class="camera-controls"><button class="btn btn-primary" onclick="toggleLiveRecognition()" id="liveToggleBtn" type="button">Start recognition</button><span class="camera-note">Camera frames are processed locally.</span></div>
         <p class="workspace-hint">Keep your whole hand visible in good light. A letter is added after it stays confirmed; lower your hand briefly to repeat it.</p>
-            <div class="glass-card debug-card" id="debugCard" style="display:none;">
-      <div class="card-header">
-        <div class="card-title">🔍 Real-Time Classifier Diagnostics</div>
-      </div>
-      <div class="debug-grid">
-        <div class="debug-item">
-          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-muted); text-align:left; line-height:1.6;">
-            <div>Engine: <span style="color:var(--primary); font-weight:bold;" id="debugEngineName">MediaPipe Landmark 3D</span></div>
-            <div id="debugFingerStates" style="margin:4px 0; color:var(--text);">Fingers: -</div>
-            <div>Orientation: <span style="color:var(--primary)" id="debugHandTilt">-</span></div>
-            <div>Model Status: <span style="color:var(--primary)" id="tfBackend">-</span> (<span id="classCount">-</span> classes)</div>
-            <div id="debugTop3" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.1); padding-top:6px;"></div>
-          </div>
-        </div>
-      </div>
-    </div>
       </div>
       <div class="results-panel" id="sidebar">
         <section class="surface gesture-card" aria-labelledby="detectedHeading">
@@ -120,11 +104,11 @@
     </div>
   </section>
   <section id="view-testing" class="app-view" data-view="testing" aria-labelledby="testingHeading" hidden>
-    <header class="page-heading"><div><p class="eyebrow">TRY YOUR OWN FILES</p><h1 id="testingHeading" tabindex="-1">Testing Lab</h1><p>Upload an image or a short video to predict its letter using the same recognition models as the live camera.</p></div></header>
-    <p class="context-notice" id="testingCameraNotice">Choose a file, review its preview, then click Predict. Files are sent to the SignSync recognition API.</p>
+    <header class="page-heading"><div><p class="eyebrow">TRY YOUR OWN FILES</p><h1 id="testingHeading" tabindex="-1">Testing Lab</h1><p>Upload images or short videos to predict their letters using the same recognition models as the live camera.</p></div></header>
+    <p class="context-notice" id="testingCameraNotice">Choose one or more files, review the queue, then click Predict all. Files are processed one at a time on your device.</p>
     <div class="media-test-inputs">
-      <section class="surface upload-section"><span class="section-number">01 / STATIC</span><h2>Test an image</h2><p>Use a clear photo of one static hand sign.</p><span class="tag">A–I and K–Y</span><label for="staticTestUpload">Choose an image</label><input id="staticTestUpload" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="staticTestHelp"><p class="field-help" id="staticTestHelp">JPG, PNG or WebP · Up to 10 MB</p></section>
-      <section class="surface upload-section"><span class="section-number">02 / DYNAMIC</span><h2>Test a video</h2><p>Keep your hand visible for the whole movement.</p><span class="tag">J and Z</span><label for="dynamicTestUpload">Choose a video</label><input id="dynamicTestUpload" type="file" accept=".mp4,.mov,.avi,.mkv,.webm,.ogv" aria-describedby="dynamicTestHelp"><p class="field-help" id="dynamicTestHelp">MP4, MOV, AVI, MKV, WebM or OGV · Up to 50 MB<br>At least 30 frames; a short, complete gesture works best.</p></section>
+      <section class="surface upload-section"><span class="section-number">01 / STATIC</span><h2>Test images</h2><p>Choose clear photos, one static hand sign per image.</p><span class="tag">A–I and K–Y</span><label for="staticTestUpload">Choose images</label><input id="staticTestUpload" type="file" accept="image/jpeg,image/png,image/webp" multiple aria-describedby="staticTestHelp"><p class="field-help" id="staticTestHelp">JPG, PNG or WebP · Up to 4 MB each</p></section>
+      <section class="surface upload-section"><span class="section-number">02 / DYNAMIC</span><h2>Test videos</h2><p>Keep your hand visible for the whole movement.</p><span class="tag">J and Z</span><label for="dynamicTestUpload">Choose videos</label><input id="dynamicTestUpload" type="file" accept=".mp4,.mov,.avi,.mkv,.webm,.ogv" multiple aria-describedby="dynamicTestHelp"><p class="field-help" id="dynamicTestHelp">MP4, MOV, AVI, MKV, WebM or OGV · Up to 4 MB each<br>At least 30 frames; a short, complete gesture works best.</p></section>
     </div>
     <section class="surface media-test-result" id="mediaTestResult" aria-labelledby="testResultHeading">
       <div class="test-result-heading"><h2 id="testResultHeading">Test result</h2><span class="processing-indicator"><span class="spinner" aria-hidden="true"></span>Processing</span></div>
@@ -135,7 +119,9 @@
   </section>
   <section id="view-alphabet" class="app-view" data-view="alphabet" aria-labelledby="alphabetHeading" hidden>
     <header class="page-heading"><div><p class="eyebrow">FINGERSPELLING REFERENCE</p><h1 id="alphabetHeading" tabindex="-1">ASL Alphabet</h1><p>Explore the hand shapes for A–Z. Static letters use a held pose; J and Z include movement.</p></div></header>
-    <div class="alphabet-intro"><span>24 static reference images</span><span class="tag">J &amp; Z · Dynamic</span></div>
+    <div class="alphabet-intro"><span>24 static reference images</span><span class="tag">J &amp; Z · Animated references</span></div>
+    <p class="field-help">Press play on J or Z to watch the movement. Each clip repeats until you pause it; use full screen for a closer look.</p>
+    <p class="field-help">The clips show the hand movement from your viewpoint.</p>
     <div class="asl-grid" id="aslGrid">
         <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/A.png" alt="ASL hand sign for A"><div class="letter">A</div><div class="desc">Fist, thumb upright beside index</div></div>
         <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/B.png" alt="ASL hand sign for B"><div class="letter">B</div><div class="desc">4 fingers straight, thumb across palm</div></div>
@@ -146,7 +132,7 @@
         <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/G.png" alt="ASL hand sign for G"><div class="letter">G</div><div class="desc">Index pointing horizontally sideways</div></div>
         <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/H.png" alt="ASL hand sign for H"><div class="letter">H</div><div class="desc">Index + middle pointing sideways</div></div>
         <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/I.png" alt="ASL hand sign for I"><div class="letter">I</div><div class="desc">Pinky straight up, other 4 closed</div></div>
-        <div class="asl-tile dynamic"><div class="reference-placeholder">Video reference<br>not yet available</div><div class="letter">J <span class="tag">Dynamic</span></div><div class="desc">Hold 'I' & swoop downward hook</div></div>
+        <div class="asl-tile dynamic"><video class="asl-sign asl-motion" controls loop muted playsinline preload="metadata" poster="./dynamic_sign_videos/J.jpg?v=2" aria-label="Slow animated ASL letter J hand movement" aria-describedby="aslJDescription"><source src="./dynamic_sign_videos/J.mp4?v=2" type="video/mp4">Your browser cannot play this video. <a href="./dynamic_sign_videos/J.mp4?v=2">Open the J video</a>.</video><div class="letter">J <span class="tag">Animated reference</span></div><div class="desc" id="aslJDescription">Hold the I hand shape; trace J with your pinky, moving down and curving into a hook.</div></div>
         <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/K.png" alt="ASL hand sign for K"><div class="letter">K</div><div class="desc">Index up, middle forward, thumb between</div></div>
         <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/L.png" alt="ASL hand sign for L"><div class="letter">L</div><div class="desc">Thumb + index at 90° angle ('L')</div></div>
         <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/M.png" alt="ASL hand sign for M"><div class="letter">M</div><div class="desc">Thumb tucked under 3 fingers</div></div>
@@ -162,14 +148,14 @@
         <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/W.png" alt="ASL hand sign for W"><div class="letter">W</div><div class="desc">Index + middle + ring up ('W')</div></div>
         <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/X.png" alt="ASL hand sign for X"><div class="letter">X</div><div class="desc">Index bent in hook/curled pose</div></div>
         <div class="asl-tile"><img class="asl-sign" src="./assets/asl/static/Y.png" alt="ASL hand sign for Y"><div class="letter">Y</div><div class="desc">Thumb + pinky extended ('Shaka')</div></div>
-        <div class="asl-tile dynamic"><div class="reference-placeholder">Video reference<br>not yet available</div><div class="letter">Z <span class="tag">Dynamic</span></div><div class="desc">Point index & trace 'Z' zigzag</div></div></div>
-    <p class="reference-credit">Static photographs from your supplied StartASL.com alphabet chart (© 2008). Original descriptions retained. Video references for J and Z have not been added yet.</p>
+        <div class="asl-tile dynamic"><video class="asl-sign asl-motion" controls loop muted playsinline preload="metadata" poster="./dynamic_sign_videos/Z.jpg?v=2" aria-label="Slow animated ASL letter Z hand movement" aria-describedby="aslZDescription"><source src="./dynamic_sign_videos/Z.mp4?v=2" type="video/mp4">Your browser cannot play this video. <a href="./dynamic_sign_videos/Z.mp4?v=2">Open the Z video</a>.</video><div class="letter">Z <span class="tag">Animated reference</span></div><div class="desc" id="aslZDescription">Extend your index finger and trace Z: across, diagonally back down, then across again.</div></div></div>
+    <p class="reference-credit">Static photographs from your supplied StartASL.com alphabet chart (© 2008). Original static descriptions retained. J and Z: SignSync dynamic hand references.</p>
   </section>
   <section id="view-about" class="app-view" data-view="about" aria-labelledby="aboutHeading" hidden>
     <header class="page-heading"><div><p class="eyebrow">ABOUT THE APPLICATION</p><h1 id="aboutHeading" tabindex="-1">About SignSync</h1><p>An app for exploring ASL fingerspelling.</p></div></header>
     <article class="surface about-content"><h2>From hand signs to letters</h2><p>SignSync recognizes American Sign Language alphabet signs from your webcam and builds spelled text from confirmed letters. You can edit that text and read it aloud using your browser’s speech feature.</p>
       <h2>Three ways to explore</h2><ul><li><strong>Recognition:</strong> spell letters live with your webcam and see the detected hand landmarks.</li><li><strong>Testing Lab:</strong> try static sign images and videos of J or Z movements.</li><li><strong>ASL Alphabet:</strong> browse the available hand sign references and descriptions.</li></ul>
-      <h2>How recognition works</h2><p>Camera frames and uploaded files are sent to the SignSync recognition service for processing. Image and video tests use the same recognition models as the camera. Uploaded videos are processed temporarily and removed after the request.</p>
+      <h2>How recognition works</h2><p>SignSync downloads its trained models and processes camera frames, images and videos in your browser. Your camera and selected files stay on your device. Image and video tests use the same trained recognition models as the camera.</p>
       <h2>What to expect</h2><p>SignSync recognizes individual alphabet letters; it does not translate full ASL conversations. Lighting, hand position, framing and movement can affect results. Check the predicted letters before using the spelled text.</p>
     </article>
   </section>
@@ -178,9 +164,10 @@
 <canvas id="hiddenCanvas" width="28" height="28" class="hidden-canvas"></canvas>
 <script src="./assets/landmark-overlay.js"></script>
 <script src="./assets/deployment-config.js"></script>
+<script src="./assets/browser-recognition.js"></script>
 <script>
 // ==================== STATE ====================
-const signSyncApiUrl = (path) => `${String(window.SIGNSYNC_API_BASE || '').replace(/\/+$/, '')}/api/${path}`;
+const signSyncRequest = (path, options) => window.SignSyncBrowser.request(path, options);
 let state = {
   model: null,
   labelMapping: null,
@@ -198,7 +185,6 @@ let state = {
   text: '',
   isSpeaking: false,
   cameraActive: false,
-  debugVisible: false,
   flipHorizontal: false,
   uploadedFiles: {},
   strokeHistory: [],
@@ -283,12 +269,6 @@ function toggleAslGuide() {
   }
 }
 
-function toggleDebug() {
-  state.debugVisible = !state.debugVisible;
-  document.getElementById('diagnosticsToggle').setAttribute('aria-expanded', String(state.debugVisible));
-  document.getElementById('debugCard').style.display = state.debugVisible ? 'block' : 'none';
-}
-
 function toggleFlip() {
   state.flipHorizontal = !state.flipHorizontal;
   const btn = document.getElementById('flipBtn');
@@ -304,7 +284,7 @@ async function loadSignSyncModels() {
   document.getElementById('loadingText').textContent = 'Loading the SignSync MLP, J/Z LSTM, and hand tracker...';
   document.getElementById('loadingOverlay').classList.remove('hidden');
   try {
-    const response = await fetch(signSyncApiUrl('status'));
+    const response = await signSyncRequest('status');
     const info = await response.json();
     if (!response.ok || !info.ready) throw new Error(info.error || 'Recognition service is unavailable.');
 
@@ -314,11 +294,8 @@ async function loadSignSyncModels() {
     selectMode(activeMode);
     document.getElementById('loadingOverlay').classList.add('hidden');
     document.getElementById('statClasses').textContent = `${info.static_letters.length} static + ${info.dynamic_letters.join('/')}`;
-    document.getElementById('statBackend').textContent = 'PyTorch CPU API';
-    document.getElementById('statPredTime').textContent = 'Server inference';
-    document.getElementById('tfBackend').textContent = 'PyTorch CPU';
-    document.getElementById('classCount').textContent = `${info.static_letters.length + info.dynamic_letters.length} letters`;
-    document.getElementById('debugEngineName').textContent = 'SignSync MLP + J/Z LSTM';
+    document.getElementById('statBackend').textContent = 'Browser WebAssembly';
+    document.getElementById('statPredTime').textContent = 'On-device inference';
     setStatus('Models Ready — Show Hand');
     showToast('Recognition models loaded. Camera stays on this device.', 'success');
   } catch (err) {
@@ -503,7 +480,6 @@ async function initModel(model, labelMapping) {
 
   // Update stats
   const backend = tf.getBackend();
-  document.getElementById('tfBackend').textContent = backend;
   document.getElementById('statBackend').textContent = backend;
 
   const outputShape = Array.isArray(model.outputs) && model.outputs[0] && model.outputs[0].shape
@@ -515,7 +491,6 @@ async function initModel(model, labelMapping) {
     0;
 
   document.getElementById('statClasses').textContent = classCount;
-  document.getElementById('classCount').textContent = classCount;
 
   // Switch UI
   document.getElementById('modelPanel').style.display = 'none';
@@ -594,20 +569,6 @@ function preprocessHand(imageSource, bbox) {
     gray[i / 4] = (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]) / 255.0;
   }
 
-  // Update debug preview
-  if (state.debugVisible) {
-    const previewCtx = document.getElementById('previewCrop').getContext('2d');
-    const previewData = previewCtx.createImageData(28, 28);
-    for (let i = 0; i < 28 * 28; i++) {
-      const val = Math.floor(gray[i] * 255);
-      previewData.data[i * 4] = val;
-      previewData.data[i * 4 + 1] = val;
-      previewData.data[i * 4 + 2] = val;
-      previewData.data[i * 4 + 3] = 255;
-    }
-    previewCtx.putImageData(previewData, 0, 0);
-  }
-
   return gray;
 }
 
@@ -634,19 +595,6 @@ function preprocessImage(imageElement) {
     gray[i / 4] = (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]) / 255.0;
   }
 
-  if (state.debugVisible) {
-    const previewCtx = document.getElementById('previewCrop').getContext('2d');
-    const previewData = previewCtx.createImageData(28, 28);
-    for (let i = 0; i < 28 * 28; i++) {
-      const val = Math.floor(gray[i] * 255);
-      previewData.data[i * 4] = val;
-      previewData.data[i * 4 + 1] = val;
-      previewData.data[i * 4 + 2] = val;
-      previewData.data[i * 4 + 3] = 255;
-    }
-    previewCtx.putImageData(previewData, 0, 0);
-  }
-
   return gray;
 }
 
@@ -668,14 +616,6 @@ function processPredictionResult(probs, elapsed) {
   const confPercent = Math.round(confidence * 100);
   document.getElementById('confidenceFill').style.width = confPercent + '%';
   document.getElementById('confidenceValue').textContent = `${confPercent}% (${predictedLetter})`;
-
-  // Display top 3 predictions in debug view
-  const debugTop3 = document.getElementById('debugTop3');
-  if (debugTop3) {
-    debugTop3.innerHTML = candidates.slice(0, 3).map((c, idx) => 
-      `<div>#${idx+1} <strong style="color:var(--primary)">${c.letter}</strong>: ${(c.prob*100).toFixed(1)}%</div>`
-    ).join('');
-  }
 
   const confidenceThreshold = 0.60;  // 60% threshold balanced with majority vote
 
@@ -976,16 +916,7 @@ function classifyLandmarks(rawLandmarks) {
 
   return {
     letter: topLetter,
-    confidence: topConf,
-    fingerStates: {
-      thumb: thumb_ext,
-      index: index_ext,
-      middle: mid_ext,
-      ring: ring_ext,
-      pinky: pinky_ext
-    },
-    handTilt: handTilt,
-    candidates: sorted.slice(0, 3).map(([letter, prob]) => ({ letter, prob }))
+    confidence: topConf
   };
 }
 
@@ -998,24 +929,6 @@ function predictFromLandmarks(landmarks) {
   const confPercent = Math.round(res.confidence * 100);
   document.getElementById('confidenceFill').style.width = confPercent + '%';
   document.getElementById('confidenceValue').textContent = `${confPercent}% (${res.letter})`;
-
-  // Update Debug Diagnostics
-  if (state.debugVisible) {
-    const f = res.fingerStates;
-    const fStr = `T:${f.thumb ? '🟢' : '⚪'} I:${f.index ? '🟢' : '⚪'} M:${f.middle ? '🟢' : '⚪'} R:${f.ring ? '🟢' : '⚪'} P:${f.pinky ? '🟢' : '⚪'}`;
-    const debugFingers = document.getElementById('debugFingerStates');
-    if (debugFingers) debugFingers.textContent = `Fingers: ${fStr}`;
-
-    const debugTilt = document.getElementById('debugHandTilt');
-    if (debugTilt) debugTilt.textContent = res.handTilt;
-
-    const debugTop3 = document.getElementById('debugTop3');
-    if (debugTop3 && res.candidates) {
-      debugTop3.innerHTML = res.candidates.map((c, idx) => 
-        `<div>#${idx+1} <strong style="color:var(--primary)">${c.letter}</strong>: ${(c.prob*100).toFixed(1)}%</div>`
-      ).join('');
-    }
-  }
 
   if (res.confidence < 0.65 || res.letter === '?') {
     return;
@@ -1390,6 +1303,7 @@ function stopProjectCamera() {
     state.projectVideoCallback = null;
   }
   state.projectGeneration++;
+  window.SignSyncBrowser?.reset();
   state.cameraActive = false;
   document.getElementById('cameraEmpty').hidden = false;
   const toggle = document.getElementById('liveToggleBtn');
@@ -1497,9 +1411,6 @@ function applyProjectPrediction(result) {
   const confirmationDelayMs = 600;
   // Keep sampling motion continuously; delay only the visible/spoken result.
   if (mode === 'LSTM') state.motionSettleUntil = now + confirmationDelayMs;
-  document.getElementById('debugEngineName').textContent = mode === 'LSTM'
-    ? 'J/Z temporal LSTM (30 x 126)' : 'Static MLP (63 normalized landmarks)';
-
   const validLetter = mode === 'LSTM' ? ['J', 'Z'].includes(letter)
     : mode === 'MLP' && typeof letter === 'string' && /^[A-IK-Y]$/.test(letter);
   if (!validLetter || confidence < 0.60) {
@@ -1672,7 +1583,7 @@ async function initProjectCamera() {
         state.projectPendingRequests++;
         document.getElementById('statPendingRequests').textContent = `${state.projectPendingRequests}`;
         const requestStartedAt = performance.now();
-        const response = await fetch(signSyncApiUrl('recognize'), {
+        const response = await signSyncRequest('recognize', {
           method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob,
           signal: requestController.signal
         });

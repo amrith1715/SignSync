@@ -1,0 +1,56 @@
+{
+  "url": "http://127.0.0.1:64567",
+  "apiRequests": [],
+  "errors": [],
+  "parity": [
+    {
+      "model": "static",
+      "maxError": 0.000003337860107421875,
+      "sameClass": true
+    },
+    {
+      "model": "static",
+      "maxError": 0.000001430511474609375,
+      "sameClass": true
+    },
+    {
+      "model": "static",
+      "maxError": 0.0000019073486328125,
+      "sameClass": true
+    },
+    {
+      "model": "dynamic",
+      "maxError": 2.384185791015625e-7,
+      "sameClass": true
+    },
+    {
+      "model": "dynamic",
+      "maxError": 5.364418029785156e-7,
+      "sameClass": true
+    },
+    {
+      "model": "dynamic",
+      "maxError": 7.152557373046875e-7,
+      "sameClass": true
+    }
+  ],
+  "images": [
+    "A.pngImage · 0.12 MBPrediction: A · 100.0% confidenceRemove",
+    "I.pngImage · 0.09 MBPrediction: I · 96.3% confidenceRemove"
+  ],
+  "videos": [
+    "J.mp4Video · 0.09 MBPrediction: J · 82.6% confidenceRemove",
+    "Z.mp4Video · 0.04 MBNo confident J or Z movement detected.Remove"
+  ],
+  "videoSummary": "Finished 2 of 2: 2 succeeded.",
+  "invalidFile": {
+    "status": 400,
+    "result": {
+      "error": "The source image could not be decoded."
+    }
+  },
+  "camera": {
+    "active": true,
+    "error": false
+  }
+}

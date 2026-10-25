@@ -29,6 +29,7 @@ signsync/
   serve_with_cors.py
   index.html
   tfjs_model/             # Optional browser model retained from the original app
+  dynamic_sign_videos/    # J/Z animated references and posters for the ASL chart
 ```
 
 Model classes and the MLP scaler/classes are stored in the checkpoints. `recognition/` contains the architectures, routing, landmark extraction, normalization, and sequence feature code. The `data/` training arrays are not needed for runtime inference and are not copied.
@@ -60,10 +61,10 @@ The sidebar opens Recognition, Testing Lab, ASL Alphabet, and About. Mobile
 screens use a collapsible menu. Recognition includes the real hand landmark
 overlay, confirmation delay, spelled text editing, and browser speech.
 
-In Testing Lab, choose an image (JPG/PNG/WebP, up to 10 MB) or video
-(MP4/MOV/AVI/MKV/WebM/OGV, up to 50 MB). Review the preview, then click
-**Predict** beneath it. **Remove file** clears the selection and result.
-Predict stays visible without a selection and displays a missing-file message.
+In Testing Lab, choose multiple images (JPG/PNG/WebP) and/or videos
+(MP4/MOV/AVI/MKV/WebM/OGV), up to 4 MB per file. Review the queue, then click
+**Predict all**. Files are sent to the recognition API one at a time, and each
+file receives its own result. Remove any queued file before prediction.
 The image and video panels sit side by side on desktop. Live recognition pauses
 when leaving its workspace and resumes on return after file testing finishes.
 
@@ -90,8 +91,8 @@ configured local path. It is not required to run the application.
 
 - `GET /api/status` loads and reports model readiness, supported classes, and the LSTM sequence length.
 - `POST /api/recognize` accepts a JPEG frame from the webcam.
-- `POST /api/test-image?expected=A` accepts a JPEG, PNG, or WebP image (up to 10 MB).
-- `POST /api/test-video?expected=J&name=clip.mp4` accepts a supported video (up to 50 MB).
+- `POST /api/test-image?expected=A` accepts a JPEG, PNG, or WebP image (up to 4 MB).
+- `POST /api/test-video?expected=J&name=clip.mp4` accepts a supported video (up to 4 MB).
 - `GET /api/gallery` reads `assets/asl/manifest.json`.
 
 Uploads are processed locally and temporary video files are removed after inference. Webcam and test media are not sent to a remote inference service. Legacy TensorFlow.js files remain in the repository, but the application uses the local MLP/LSTM pipeline.
@@ -100,16 +101,24 @@ Uploads are processed locally and temporary video files are removed after infere
 
 The alphabet view uses 24 user-supplied static photographs under
 `assets/asl/static/<LETTER>.png`, retaining their descriptions. These derive from
-the supplied StartASL.com chart (copyright 2008). J and Z display placeholders
-pending user-provided video references. The separate `static_signs_images`
+the supplied StartASL.com chart (copyright 2008). J and Z have six-second animated
+hand references under `dynamic_sign_videos/`, with white backgrounds, slow motion,
+native playback controls, and a fade before looping. They show the movement
+from the learner's viewpoint. The separate `static_signs_images`
 folder contains the 224 x 224 RGB reference images used in the audit.
 
 Video formats depend on installed OpenCV codecs. Every one of the 30 sampled
-frames must contain a detectable hand. The older Commons reference metadata is
-retained in the manifest; its attribution is recorded there.
+frames must contain a detectable hand.
+
+The generated illustrations use the static photographs as appearance references.
+Their source artwork and complete image-generation prompts are preserved in
+`dynamic_sign_videos/source/generation.json`. They have not been independently
+reviewed by a fluent ASL signer and are not recognition accuracy test data.
+`scripts/render-dynamic-signs.py` reproduces the clips using Pillow, NumPy,
+OpenCV, and FFmpeg; these rendering tools are not needed to play the videos.
 
 ## Attribution and licensing
 
 The migrated ASL model source checkout described itself as MIT-licensed in its README, but no `LICENSE` file was present. `THIRD_PARTY_NOTICES.md` records this provenance and the unresolved redistribution status. The static MLP was subsequently adapted as documented above; the LSTM checkpoint was retained.
 
-The MediaPipe hand landmarker task was copied from Google's published MediaPipe model URL. MediaPipe source code is Apache-2.0 licensed; the model bundle's separate redistribution terms should be confirmed before distributing SignSync outside your own local use. See `THIRD_PARTY_NOTICES.md` for source URLs and this limitation. The reference video manifest records its CC BY-SA 3.0 attribution.
+The MediaPipe hand landmarker task was copied from Google's published MediaPipe model URL. MediaPipe source code is Apache-2.0 licensed; the model bundle's separate redistribution terms should be confirmed before distributing SignSync outside your own local use. See `THIRD_PARTY_NOTICES.md` for source URLs, generated-media provenance, and the legacy Commons reference.

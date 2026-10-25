@@ -2,6 +2,7 @@ FROM python:3.11-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    HOST=0.0.0.0 \
     PORT=8001
 
 RUN apt-get update \
@@ -11,6 +12,7 @@ RUN apt-get update \
 WORKDIR /app
 COPY requirements.txt ./requirements.txt
 RUN python -m pip install --no-cache-dir --upgrade pip \
+    && python -m pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu \
     && python -m pip install --no-cache-dir -r requirements.txt
 
 COPY serve_with_cors.py recognition_service.py ./

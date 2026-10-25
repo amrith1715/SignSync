@@ -18,8 +18,26 @@ MediaPipe source code is published under Apache License 2.0: <https://github.com
 
 ## Wikimedia Commons reference video
 
-`assets/asl/manifest.json` references, but does not bundle, “American Sign Language demo” by Travis Dougherty (Fuzheado), Wikimedia Commons:
+The optional legacy `/api/test-commons-video` route references, but does not bundle, “American Sign Language demo” by Travis Dougherty (Fuzheado), Wikimedia Commons:
 
 <https://commons.wikimedia.org/wiki/File:American_Sign_Language_demo_-_Travis_Dougherty.ogv>
 
-The manifest records CC BY-SA 3.0 and attribution details. If you redistribute a downloaded copy, follow the license's attribution and share-alike requirements.
+That source is CC BY-SA 3.0. If you redistribute a downloaded copy, follow the license's attribution and share-alike requirements. It is no longer used for the chart's J and Z cards.
+
+## Generated J and Z chart illustrations
+
+`dynamic_sign_videos/J.mp4` and `Z.mp4` were rendered from hand artwork created
+with the built-in image generator on October 24, 2026. Appearance references
+were the user-supplied I and D photographs in `assets/asl/static/`, originating
+from the StartASL.com chart (copyright 2008). The illustrations preserve a similar
+skin tone and white background; they are not recordings of a signer.
+
+Motion design references:
+
+- [ASL University signing notes: J and forearm rotation](https://www.lifeprint.com/asl101/topics/signingnotes.htm)
+- [ASL University: right-handed Z](https://www.lifeprint.com/asl101/pages-signs/z/z.htm)
+
+The reference web media are not bundled in these clips. Generation prompts and
+source artwork are stored in `dynamic_sign_videos/source/`; the static Vercel
+build includes only the finished MP4 clips and JPG posters. These animations
+have not been independently reviewed by a fluent ASL signer.

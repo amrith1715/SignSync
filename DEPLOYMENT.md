@@ -1,5 +1,27 @@
 # SignSync deployment (Vercel frontend + Oracle Cloud API)
 
+## Current deployment and free Render option
+
+The frontend is deployed at https://sign-sync-lemon.vercel.app. The Python
+recognition API still needs a public host; website availability alone does not
+mean camera or Testing Lab predictions are connected.
+
+`render.yaml` prepares a Docker web service on Render's Free plan. Its CORS
+origin matches the Vercel production URL. The Docker image installs CPU-only
+PyTorch and listens on all interfaces, using the host-provided `PORT`.
+
+Deploy the current project files from your Git repository using a Render
+Blueprint. Keep the service on the Free plan. Free instances have limited
+memory and sleep when idle, so verify that `/api/status` returns `ready: true`
+and that image/video inference succeeds before considering this backend ready.
+Do not upgrade to paid compute to resolve a memory failure without approval.
+
+Once the backend is healthy, set Vercel's production `SIGNSYNC_API_BASE` to
+its HTTPS origin (without `/api`) and redeploy the frontend. Check predictions
+from the public site, including CORS, before sharing it as a working recognizer.
+
+See [Render free service limits](https://render.com/docs/free).
+
 SignSync's browser app is built as a static Vercel deployment. The existing
 Python service, MediaPipe hand tracker, MLP/LSTM checkpoints, and video decoder
 run together in a Docker container on an Oracle Cloud VM. The Vercel build
@@ -8,11 +30,13 @@ training data, or repository files as public website content.
 
 ## Why the API is hosted separately
 
-The Vercel Hobby Function request-body limit is 4.5 MB, while SignSync's upload
-controls accept 10 MB images and 50 MB videos. Hosting inference in a Vercel
-Function would therefore break current upload behavior. The live J/Z recognizer
-also keeps an in-memory sequence of camera frames, which needs a stable backend
-process. The browser calls that process directly over HTTPS.
+Vercel Function request and response bodies are limited to 4.5 MB. SignSync now
+limits each test file to 4 MB and sends a batch as separate, sequential requests.
+However, this deployment builds a static frontend and sends uploads directly to
+the separate Python API; the limit alone does not move inference onto Vercel.
+The live J/Z recognizer also keeps an in-memory sequence of camera frames, which
+needs a stable backend process. The browser calls that process directly over
+HTTPS.
 
 ## 1. Push the prepared project to GitHub
 
